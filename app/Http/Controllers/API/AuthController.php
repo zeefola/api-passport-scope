@@ -3,47 +3,60 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\RegisterUserRequest;
-use App\Http\Requests\LoginUserRequest;
+use Illuminate\Support\Facades\Validator;
+use App\Repository\AuthRepository;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class AuthController extends Controller
 {
-    public function register(RegisterUserRequest $request)
+    private $authrepository;
+
+    public function __construct(AuthRepository $authrepository) //constructor for the repository
     {
-        $validatedData = $request->validated();
-        $validatedData['password'] = bcrypt($request->password);
-
-        $user = User::create($validatedData);
-        $accessToken = $user->createToken(
-            'accessToken',
-            ['user', 'all', 'products']
-        )->accessToken;
-
-        return response()->json([
-            'user' => $user,
-            'access_token' => $accessToken,
-            'message' => 'Registration successful'
-        ]);
+        $this->authrepository = $authrepository;
     }
 
-    public function login(LoginUserRequest $request)
+    public function register()
     {
-        //validate users info and grant access
-        $loginCredentials = $request->validated();
-        if (!Auth::attempt($loginCredentials)) {
-            return response(['message' => 'Invalid Credentials']);
-        }
-
-        $accessToken = Auth::user()->createToken(
-            'accessToken',
-            ['all', 'user', 'products']
-        )->accessToken;
-        return response()->json([
-            'email' => $loginCredentials['email'],
-            'access_token' => $accessToken,
-            'message' => 'Login Successful'
+        //Validate what's coming in
+        $validatedData = Validator::make(request()->all(), [
+            'name' => 'bail|required',
+            'email' => 'bail|required|email|unique:users',
+            'password' => 'bail|required'
         ]);
+        //Display validation error
+        $this->validationError($validatedData);
+
+        return $this->authrepository->register();
+    }
+
+    public function login()
+    {
+        //validate users info
+        $validatedData = Validator::make(
+            request()->all(),
+            [
+                'email' => 'bail|required|email',
+                'password' => 'bail|required'
+            ]
+        );
+        //Display validation error
+        $this->validationError($validatedData);
+
+        return $this->authrepository->login();
+    }
+
+    public function validationError($validatedData)
+    {
+        if ($validatedData->fails()) {
+            $errors = $validatedData->errors();
+
+            $response = response()->json([
+                'message' => $errors->messages(), 'Validation Error'
+            ]);
+
+            throw new HttpResponseException($response);
+        }
     }
 }
