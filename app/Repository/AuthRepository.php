@@ -4,42 +4,45 @@ namespace App\Repository;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
 
 class AuthRepository
 {
-    public function register()
+    public function register($data)
     {
         //Create a record and send response to the controller
-        $user = User::create(
+        return User::create(
             [
-                'name' => request()->name,
-                'email' => request()->email,
-                'password' => bcrypt(request()->password),
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => bcrypt($data['password']),
                 'scopes' => ['user', 'all', 'products']
             ]
         );
-        return response()->json([
-            'message' => 'Registration successful',
-            'details' => $user
-        ]);
     }
 
-    public function login()
+    public function login($data)
     {
-        $user_email = request()->email;
-        $user_password = request()->password;
+        $user_email = $data['email'];
+        $user_password = $data['password'];
 
         //Get User's Record
         $user = User::where('email', $user_email)->first();
 
         // Compare Db with Request Data
         if (!$user) {
-            return response()->json(['message' => 'Invalid Credential']);
+            return $data = [
+                'message' => 'user not found',
+                'status' => 'failed',
+                'code'    => 404,
+            ];
         }
 
         if (!Hash::check($user_password, $user->password)) {
-            return response()->json(['message' => 'Invalid Credential']);
+            return $data = [
+                'message' => 'Invalid Credential',
+                'status' => 'failed',
+                'code' => 404
+            ];
         }
 
         if ($user) {
@@ -47,11 +50,11 @@ class AuthRepository
                 //Create an access token for the user
                 $accessToken = $user->createToken('accessToken', $user->scopes)->accessToken;
 
-                return response()->json([
+                return $data = [
                     'message' => 'Login Successful',
                     'details' => $user,
                     'access_token' => $accessToken
-                ]);
+                ];
             }
         }
     }

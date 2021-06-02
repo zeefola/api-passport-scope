@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Repository\AuthRepository;
-use Illuminate\Http\Exceptions\HttpResponseException;
+// use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -17,46 +17,52 @@ class AuthController extends Controller
         $this->authrepository = $authrepository;
     }
 
-    public function register()
+    public function register(Request $request)
     {
-        //Validate what's coming in
-        $validatedData = Validator::make(request()->all(), [
+        // Validate what's coming in
+        $validatedData = Validator::make($request->all(), [
             'name' => 'bail|required',
             'email' => 'bail|required|email|unique:users',
             'password' => 'bail|required'
-        ]);
-        //Display validation error
-        $this->validationError($validatedData);
+        ])->validate();
 
-        return $this->authrepository->register();
+        //Register User and Return response
+        $user = $this->authrepository->register($validatedData);
+        return response()->json([
+            'message' => 'Registration successful',
+            'details' => $user
+        ]);
     }
 
-    public function login()
+    public function login(Request $request)
     {
         //validate users info
         $validatedData = Validator::make(
-            request()->all(),
+            $request->all(),
             [
                 'email' => 'bail|required|email',
                 'password' => 'bail|required'
             ]
-        );
-        //Display validation error
-        $this->validationError($validatedData);
+        )->validate();
 
-        return $this->authrepository->login();
+
+        $response = $this->authrepository->login($validatedData);
+
+        return response()->json([
+            $response
+        ]);
     }
 
-    public function validationError($validatedData)
-    {
-        if ($validatedData->fails()) {
-            $errors = $validatedData->errors();
+    // public function validationError($validatedData)
+    // {
+    //     if ($validatedData->fails()) {
+    //         $errors = $validatedData->errors();
 
-            $response = response()->json([
-                'message' => $errors->messages(), 'Validation Error'
-            ]);
+    //         $response = response()->json([
+    //             'message' => $errors->messages(), 'Validation Error'
+    //         ]);
 
-            throw new HttpResponseException($response);
-        }
-    }
+    //         throw new HttpResponseException($response);
+    //     }
+    // }
 }
