@@ -43,17 +43,13 @@ class AuthRepository
             ];
         }
 
-        if ($user) {
-            if (Hash::check($user_password, $user->password)) {
-                //Create an access token for the user
-                $accessToken = $user->createToken('accessToken', $user->scopes)->accessToken;
+        //Create an access token for the user
+        $accessToken = $user->createToken('accessToken', $user->scopes)->accessToken;
 
-                return $data = [
-                    'message' => 'Login Successful',
-                    'details' => $user,
-                    'access_token' => $accessToken,
-                ];
-            }
-        }
+        return $data = [
+            'message' => 'Login Successful',
+            'details' => $user,
+            'access_token' => $accessToken,
+        ];
     }
 }
