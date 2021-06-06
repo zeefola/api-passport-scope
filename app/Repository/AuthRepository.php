@@ -33,7 +33,6 @@ class AuthRepository
             return $data = [
                 'message' => 'user not found',
                 'status' => 'failed',
-                'code'    => 404,
             ];
         }
 
@@ -41,7 +40,6 @@ class AuthRepository
             return $data = [
                 'message' => 'Invalid Credential',
                 'status' => 'failed',
-                'code' => 404
             ];
         }
 
@@ -53,7 +51,7 @@ class AuthRepository
                 return $data = [
                     'message' => 'Login Successful',
                     'details' => $user,
-                    'access_token' => $accessToken
+                    'access_token' => $accessToken,
                 ];
             }
         }

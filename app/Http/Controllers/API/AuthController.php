@@ -30,7 +30,7 @@ class AuthController extends Controller
         $user = $this->authrepository->register($validatedData);
         return response()->json([
             'message' => 'Registration successful',
-            'details' => $user
+            'details' => $user,
         ]);
     }
 
@@ -48,9 +48,7 @@ class AuthController extends Controller
 
         $response = $this->authrepository->login($validatedData);
 
-        return response()->json([
-            $response
-        ]);
+        return response()->json($response);
     }
 
     // public function validationError($validatedData)
