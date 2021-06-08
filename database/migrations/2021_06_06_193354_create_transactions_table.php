@@ -21,7 +21,7 @@ class CreateTransactionsTable extends Migration
             $table->boolean('paid');
             $table->boolean('confirmed');
             $table->boolean('cancel');
-            $table->$table->timestamps();
+            $table->timestamps();
         });
     }
 

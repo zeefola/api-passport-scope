@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Repository\TransactionRepository;
+use Illuminate\Support\Facades\Validator;
 
 class TransactionController extends Controller
 {
-
     protected $transactionrepository;
 
     public function __construct($transactionrepository)

@@ -20,7 +20,9 @@ class CreateProductsTable extends Migration
             $table->double('amount');
             $table->boolean('sold');
             $table->boolean('active');
-            $table->integer('user_id');
+            $table->foreignId('user_id')
+                ->constrained()
+                ->onDelete('cascade');
             $table->timestamps();
         });
     }
