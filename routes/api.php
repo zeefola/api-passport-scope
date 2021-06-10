@@ -45,5 +45,7 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/confirm-payment', [TransactionController::class, 'confirmPayment']);
     Route::put('/cancel-transaction', [TransactionController::class, 'cancelTransaction']);
     Route::get('/transactions', [TransactionController::class, 'getAllTransaction']);
+    Route::get('/user-transactions', [TransactionController::class, 'getUserTransactions']);
     Route::get('/single-transaction', [TransactionController::class, 'getSingleTransaction']);
+    Route::get('/product-transactions', [TransactionController::class, 'getProductTransactions']);
 });

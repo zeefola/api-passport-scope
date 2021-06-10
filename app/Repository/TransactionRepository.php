@@ -45,11 +45,16 @@ class TransactionRepository
 
     public function markAsPaid($data)
     {
-        $transaction = Transaction::where('user_id', Auth::id())
+        $transaction = Transaction::where('id',$data['transaction_id'])->first();
+        $user = Transaction::where('user_id', Auth::id())
         ->where('id',$data['transaction_id'])->first();
 
         if(!$transaction){
-            return ['message' => 'You\'re not Authorized'];
+            return ['message' => 'Transaction Not Found'];
+        }
+
+        if(!$user){
+            return ['message' => 'You\'re Not Authorized'];
         }
 
         $transaction->update([
@@ -114,12 +119,11 @@ class TransactionRepository
 
     public function getSingleTransaction($data)
     {
-        $transaction = Transaction::where('user_id', Auth::id())
-           ->where('id',$data['transaction_id'])->first();
+        $transaction = Transaction::where('id',$data['transaction_id'])->first();
 
         if(!$transaction)
         {
-            return ['message' => 'Transaction Record not found'];
+            return ['message' => 'Transaction Record Not found'];
         }
 
         return [
@@ -127,8 +131,33 @@ class TransactionRepository
         ];
     }
 
-    public function getAllTransaction()
+    public function getUserTransactions()
     {
         return auth()->user()->transactions;
+    }
+
+    public function getAllTransaction()
+    {
+        return Transaction::all();
+    }
+
+    public function getProductTransactions($data)
+    {
+        $transaction = Transaction::where('product_id',$data['product_id'])->get();
+        $product = Product::where('id',$data['product_id'])->first();
+
+        if(!$product)
+        {
+            return ['message' => 'Transaction Record Not found'];
+        }
+
+        // if(!$transaction)
+        // {
+        //     return ['message' => 'Transaction Record Not found'];
+        // }
+
+        return [
+            'data' => $transaction,
+        ];
     }
 }

@@ -77,4 +77,22 @@ class TransactionController extends Controller
         $transaction = $this->transactionrepository->getAllTransaction();
         return response()->json(['transactions' =>$transaction]);
     }
+
+    public function getUserTransactions()
+    {
+        $transaction = $this->transactionrepository->getUserTransactions();
+        return response()->json(['transactions' =>$transaction]);
+    }
+
+    public function getProductTransactions(Request $request)
+    {
+        //Validate what's coming in
+        $validatedId = Validator::make($request->all(),
+        ['product_id' => 'required'])->validate();
+
+        $transaction = $this->transactionrepository->getProductTransactions($validatedId);
+
+        return response()->json($transaction);
+    }
+
 }
