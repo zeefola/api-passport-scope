@@ -10,6 +10,13 @@ class ProductRepository
 
     public function createProduct($productData)
     {
+        //Check if product name already exists
+        $db_data = Product::where('name',$productData['name'])->exists();
+
+        if($db_data){
+            return ['error' => 'Product Name Already exists'];
+        }
+
         return Product::create([
             'name' => $productData['name'],
             'quantity' => $productData['quantity'],
@@ -17,7 +24,6 @@ class ProductRepository
             'sold' => false,
             'active' => true,
             'user_id' => Auth::id(),
-            // 'user_id' => auth()->guard('api')->user()->id,
         ]);
     }
 
@@ -34,15 +40,20 @@ class ProductRepository
     public function updateProduct($data)
     {
         // $result = [];
-        $product = Product::where('user_id', Auth::id())
-               ->where('id',$data['id'])->first();
+        $product = Product::where('id',$data['id'])->first();
+        $user = Product::where('user_id', Auth::id())
+        ->where('id',$data['id'])->first();
 
         if(!$product){
-            return $data = ['message' => 'You\'re not Authorized'];
+            return ['error' => 'Product Not Found'];
+        }
+
+        if(!$user){
+            return ['error' => 'You\'re not Authorized'];
         }
 
         $product->update($data);
-        return $data = [
+        return [
          'message' => 'Product Updated',
          'data' => $product
         ];
@@ -55,16 +66,24 @@ class ProductRepository
     public function deleteProduct($data)
     {
         // $product = Product::find($data['id']);
-        $product = Product::where('user_id',Auth::id())
-            ->where('id',$data['id'])
-                   ->where('sold',false)->first();
+        $product = Product::where('id',$data['id'])->first();
+        $user = Product::where('user_id', Auth::id())
+        ->where('id',$data['id'])->first();
 
         if(!$product){
-            return $data = ['message' => 'You\'re not Authorized'];
+            return ['error' => 'Product Not Found'];
+        }
+
+        if(!$user){
+            return ['error' => 'You\'re not Authorized'];
+        }
+
+        if($product->sold == true){
+           return ['error' => 'You can\'t delete a sold out product'];
         }
 
         $product->delete($data);
-        return $data = [
+        return  [
         'message' => 'Product Deleted',
         'data' => []
         ];
@@ -72,50 +91,57 @@ class ProductRepository
 
     public function restockProduct($data)
     {
-        $product = Product::where('user_id', Auth::id())
-               ->where('id',$data['id'])->first();
+        $product = Product::where('id',$data['id'])->first();
+        $user = Product::where('user_id', Auth::id())
+        ->where('id',$data['id'])->first();
 
         if(!$product){
-            return $data = ['message' => 'You\'re not Authorized'];
+            return ['error' => 'Product Not Found'];
         }
 
-        if($product->sold == false) {
-            return $data = ['message' => 'Can\'t restock product thats still in stock'];
+        if(!$user){
+            return ['error' => 'You\'re not Authorized'];
         }
 
-        if($product->sold == true) {
-            $product->update([
-                $product->quantity = $data['quantity'],
-                $product->sold = false,
-                $product->active = true
-            ]);
+        $product->update([
+            $product->quantity += $data['quantity'],
+            $product->sold = false,
+            $product->active = true
+        ]);
 
-            return $data = [
-            'message' => 'Product Restocked',
-            'data' => $product
-            ];
-        }
+        return [
+        'message' => 'Product Restocked',
+        'data' => $product
+        ];
+
     }
 
     public function markAsSold($data)
     {
-        $product = Product::where('user_id', Auth::id())
-               ->where('id',$data['id'])->first();
+        $product = Product::where('id',$data['id'])->first();
+        $user = Product::where('user_id', Auth::id())
+        ->where('id',$data['id'])->first();
 
         if(!$product){
-            return $data = ['message' => 'You\'re not Authorized'];
+            return ['error' => 'Product Not Found'];
         }
 
-        if($product->sold == false){
-            $product->update([
-                $product->quantity = 0,
-                $product->sold = true,
-                $product->active = false
-            ]);
-            return $data = [
-                'message' => 'Marked as Sold',
-                'data' => $product
-            ];
+        if(!$user){
+            return ['error' => 'You\'re not Authorized'];
         }
+
+        if($product->sold == true){
+          return ['error' => 'Product is already sold out'];
+        }
+
+        $product->update([
+            $product->quantity = 0,
+            $product->sold = true,
+            $product->active = false
+        ]);
+        return [
+            'message' => 'Marked as Sold',
+            'data' => $product
+        ];
     }
 }

@@ -20,12 +20,8 @@ class TransactionController extends Controller
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
-            'product_id' => 'bail|required|exists:products,id',
-            // 'total_amount' => 'bail|required',
+            'product_id' => 'bail|required',
             'quantity' => 'bail|required',
-            // 'paid' => 'bail|required',
-            // 'confirmed' => 'bail|required',
-            // 'cancel' => 'bail|required'
         ])->validate();
 
         $response = $this->transactionrepository->initializeTransaction($validatedData);
@@ -36,7 +32,7 @@ class TransactionController extends Controller
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
-            'transaction_id' => 'bail|required|exists:transactions,id',
+            'transaction_id' => 'bail|required',
         ])->validate();
 
         $response = $this->transactionrepository->markAsPaid ($validatedData);
@@ -47,7 +43,7 @@ class TransactionController extends Controller
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
-            'transaction_id' => 'bail|required|exists:transactions,id',
+            'transaction_id' => 'bail|required',
         ])->validate();
 
         $response = $this->transactionrepository->confirmPayment($validatedData);
@@ -58,7 +54,7 @@ class TransactionController extends Controller
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
-            'transaction_id' => 'bail|required|exists:transactions,id',
+            'transaction_id' => 'bail|required',
         ])->validate();
 
         $response = $this->transactionrepository->cancelTransaction($validatedData);
@@ -69,7 +65,7 @@ class TransactionController extends Controller
     {
         //Validate what's coming in
         $validatedId = Validator::make($request->all(),
-        ['transaction_id' => 'required|exists:transactions,id'])->validate();
+        ['transaction_id' => 'required'])->validate();
 
         $transaction = $this->transactionrepository->getSingleTransaction($validatedId);
 

@@ -10,11 +10,16 @@ class TransactionRepository
 {
     public function initializeTransaction($data)
     {
-        $product = Product::where('user_id', Auth::id())
-               ->where('id',$data['product_id'])->first();
+        $product = Product::where('id',$data['product_id'])->first();
+        $user = Product::where('user_id', Auth::id())
+           ->where('id',$data['product_id'])->first();
 
         if(!$product){
-            return $data = ['message' => 'You\'re not Authorized'];
+            return ['message' => 'Product Not Found'];
+        }
+
+        if($user){
+            return ['message' => 'You can\'t initiate transaction on your product'];
         }
         //Create Transaction
         $data = Transaction::create([
@@ -26,8 +31,13 @@ class TransactionRepository
             'confirmed' => false,
             'cancel' => false,
         ]);
+        //Subtract Product quantity from product table
+        $product->update([
+            $product->quantity -= $data['quantity'],
+        ]);
 
-        return $data = [
+
+        return [
             'message' => 'Transaction Initialized',
             'data' => $data
         ];
@@ -39,14 +49,14 @@ class TransactionRepository
         ->where('id',$data['transaction_id'])->first();
 
         if(!$transaction){
-            return $data = ['message' => 'You\'re not Authorized'];
+            return ['message' => 'You\'re not Authorized'];
         }
 
         $transaction->update([
          $transaction->paid = true
         ]);
 
-        return $data = [
+        return [
             'message' => 'Marked as Paid',
             'data' => $transaction,
         ];
@@ -59,7 +69,7 @@ class TransactionRepository
         $product = Product::where('id', $transaction->product_id)->first();
 
         if(!$transaction){
-            return $data = ['message' => 'You\'re not Authorized'];
+            return ['message' => 'You\'re not Authorized'];
         }
 
         $transaction->update([
@@ -70,7 +80,7 @@ class TransactionRepository
             $product->quantity -= $transaction->quantity
         ]);
 
-        return $data = [
+        return [
             'message' => 'Payment Confirmed',
             'data' => $transaction,
         ];
@@ -83,7 +93,7 @@ class TransactionRepository
         $product = Product::where('id', $transaction->product_id)->first();
 
         if(!$transaction){
-            return $data = ['message' => 'You\'re not Authorized'];
+            return  ['message' => 'You\'re not Authorized'];
         }
 
         $transaction->update([
@@ -96,7 +106,7 @@ class TransactionRepository
             ]);
         }
 
-        return $data = [
+        return [
             'message' => 'Transaction Cancelled',
             'data' => $transaction,
         ];
@@ -109,10 +119,10 @@ class TransactionRepository
 
         if(!$transaction)
         {
-            return $data = ['message' => 'Transaction Record not found'];
+            return ['message' => 'Transaction Record not found'];
         }
 
-        return $data = [
+        return [
             'data' => $transaction,
         ];
     }

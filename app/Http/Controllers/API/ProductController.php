@@ -24,16 +24,15 @@ class ProductController extends Controller
             'name' => 'bail|required',
             'quantity' => 'bail|required',
             'amount' => 'bail|required',
-            // 'sold' => 'bail|required',
-            // 'active' => 'bail|required'
         ])->validate();
 
         //Create product record
         $product = $this->productrepository->createProduct($validatedData);
-        return response()->json([
-            'message' => 'Product Created Successfully',
-            'product' => $product
-        ]);
+        return response()->json($product);
+        // return response()->json([
+        //     'message' => 'Product Created Successfully',
+        //     'product' => $product
+        // ]);
     }
 
     public function getAllProduct()
@@ -55,7 +54,7 @@ class ProductController extends Controller
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
-            'id' => 'bail|required|exists:products,id',
+            'id' => 'bail|required',
             'name' => 'bail|sometimes|required',
             'quantity' => 'bail|sometimes|required',
             'amount' => 'bail|sometimes|required',
@@ -71,7 +70,7 @@ class ProductController extends Controller
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
-            'id' => 'bail|required|exists:products,id',
+            'id' => 'bail|required',
         ])->validate();
 
         $response = $this->productrepository->deleteProduct($validatedData);
@@ -82,7 +81,7 @@ class ProductController extends Controller
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
-            'id' => 'bail|required|exists:products,id',
+            'id' => 'bail|required',
             'quantity' => 'bail|required',
         ])->validate();
 
@@ -94,7 +93,7 @@ class ProductController extends Controller
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
-            'id' => 'bail|required|exists:products,id',
+            'id' => 'bail|required',
         ])->validate();
 
         $response = $this->productrepository->markAsSold($validatedData);
