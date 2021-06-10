@@ -24,6 +24,26 @@ use App\Http\Controllers\API\TransactionController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+//Fetch Product
+Route::get('/products', [ProductController::class, 'getAllProduct']);
+Route::get('/single-product', [ProductController::class, 'getSingleProduct']);
+
 Route::middleware('auth:api')->group(function () {
+
+    Route::post('/logout', [AuthController::class,'logout']);
+
+    //Product Routes
     Route::post('/create-product', [ProductController::class, 'createProduct']);
+    Route::put('/update-product', [ProductController::class, 'updateProduct']);
+    Route::delete('/delete-product', [ProductController::class, 'deleteProduct']);
+    Route::put('/restock-product', [ProductController::class, 'restockProduct']);
+    Route::put('/mark-as-sold', [ProductController::class, 'markAsSold']);
+
+    //Transaction Route
+    Route::post('/initialize-transaction', [TransactionController::class, 'initializeTransaction']);
+    Route::put('/mark-as-paid', [TransactionController::class, 'markAsPaid']);
+    Route::put('/confirm-payment', [TransactionController::class, 'confirmPayment']);
+    Route::put('/cancel-transaction', [TransactionController::class, 'cancelTransaction']);
+    Route::get('/transactions', [TransactionController::class, 'getAllTransaction']);
+    Route::get('/single-transaction', [TransactionController::class, 'getSingleTransaction']);
 });

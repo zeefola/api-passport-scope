@@ -11,32 +11,74 @@ class TransactionController extends Controller
 {
     protected $transactionrepository;
 
-    public function __construct($transactionrepository)
+    public function __construct(TransactionRepository $transactionrepository)
     {
         $this->transactionrepository = $transactionrepository;
     }
 
-    public function initializeTransaction()
+    public function initializeTransaction(Request $request)
     {
+        //Validate inputs
+        $validatedData = Validator::make($request->all(), [
+            'product_id' => 'bail|required|exists:products,id',
+            // 'total_amount' => 'bail|required',
+            'quantity' => 'bail|required',
+            // 'paid' => 'bail|required',
+            // 'confirmed' => 'bail|required',
+            // 'cancel' => 'bail|required'
+        ])->validate();
+
+        $response = $this->transactionrepository->initializeTransaction($validatedData);
+        return response()->json($response);
     }
 
-    public function markAsPaid()
+    public function markAsPaid(Request $request)
     {
+        //Validate inputs
+        $validatedData = Validator::make($request->all(), [
+            'transaction_id' => 'bail|required|exists:transactions,id',
+        ])->validate();
+
+        $response = $this->transactionrepository->markAsPaid ($validatedData);
+        return response()->json($response);
     }
 
-    public function confirmPayment()
+    public function confirmPayment(Request $request)
     {
+        //Validate inputs
+        $validatedData = Validator::make($request->all(), [
+            'transaction_id' => 'bail|required|exists:transactions,id',
+        ])->validate();
+
+        $response = $this->transactionrepository->confirmPayment($validatedData);
+        return response()->json($response);
     }
 
-    public function cancelTransaction()
+    public function cancelTransaction(Request $request)
     {
+        //Validate inputs
+        $validatedData = Validator::make($request->all(), [
+            'transaction_id' => 'bail|required|exists:transactions,id',
+        ])->validate();
+
+        $response = $this->transactionrepository->cancelTransaction($validatedData);
+        return response()->json($response);
     }
 
-    public function getSingleTransaction()
+    public function getSingleTransaction(Request $request)
     {
+        //Validate what's coming in
+        $validatedId = Validator::make($request->all(),
+        ['transaction_id' => 'required|exists:transactions,id'])->validate();
+
+        $transaction = $this->transactionrepository->getSingleTransaction($validatedId);
+
+        return response()->json($transaction);
     }
 
     public function getAllTransaction()
     {
+        $transaction = $this->transactionrepository->getAllTransaction();
+        return response()->json(['transactions' =>$transaction]);
     }
 }

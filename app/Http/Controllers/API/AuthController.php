@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use App\Repository\AuthRepository;
+use Illuminate\Support\Facades\Auth;
 // use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 
@@ -49,6 +50,15 @@ class AuthController extends Controller
         $response = $this->authrepository->login($validatedData);
 
         return response()->json($response);
+    }
+
+    public function logout(){
+        $user = Auth::user()->token();
+        $user->revoke();
+        return response()->json([
+            'message' => 'Logged Out Successfully'
+        ]);
+
     }
 
     // public function validationError($validatedData)
