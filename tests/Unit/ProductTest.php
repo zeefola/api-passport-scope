@@ -1,22 +1,22 @@
 <?php
 
-namespace Tests\Unit;
+// namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
-use App\Models\Product;
-use App\Repository\ProductRepository;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
+// use PHPUnit\Framework\TestCase;
+// use App\Models\Product;
+// use App\Repository\ProductRepository;
+// use App\Models\User;
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class ProductTest extends TestCase
-{
-//    use RefreshDatabase;
+// // use Illuminate\Foundation\Testing\RefreshDatabase;
 
-public function test_product_name_already_exist(){
-    $product_name = (new ProductRepository()->createProduct(...));
-    $this->assertEquals(expected:0, $product_name);
-}
+// class ProductTest extends TestCase
+// {
+// //    use RefreshDatabase;
 
-}
+// public function test_product_name_already_exist(){
+//     $product_name = (new ProductRepository()->createProduct(...));
+//     $this->assertEquals(expected:0, $product_name);
+// }
+
+// }
