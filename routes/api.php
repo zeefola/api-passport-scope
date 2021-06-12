@@ -43,6 +43,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/initialize-transaction', [TransactionController::class, 'initializeTransaction']);
     Route::put('/mark-as-paid', [TransactionController::class, 'markAsPaid']);
     Route::put('/confirm-payment', [TransactionController::class, 'confirmPayment']);
+    Route::put('/reject-payment', [TransactionController::class, 'rejectPayment']);
     Route::put('/cancel-transaction', [TransactionController::class, 'cancelTransaction']);
     Route::get('/transactions', [TransactionController::class, 'getAllTransaction']);
     Route::get('/user-transactions', [TransactionController::class, 'getUserTransactions']);

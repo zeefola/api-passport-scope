@@ -34,7 +34,13 @@ class ProductRepository
 
     public function getSingleProduct($id)
     {
-      return Product::findOrFail($id);
+      $product = Product::where('id',$id)->first();
+
+      if(!$product){
+          return ['error' => 'Product Not Found'];
+        }
+
+        return ['data' => $product];
     }
 
     public function updateProduct($data)

@@ -50,6 +50,17 @@ class TransactionController extends Controller
         return response()->json($response);
     }
 
+    public function rejectPayment(Request $request)
+    {
+        //Validate inputs
+        $validatedData = Validator::make($request->all(), [
+            'transaction_id' => 'bail|required',
+        ])->validate();
+
+        $response = $this->transactionrepository->rejectPayment($validatedData);
+        return response()->json($response);
+    }
+
     public function cancelTransaction(Request $request)
     {
         //Validate inputs

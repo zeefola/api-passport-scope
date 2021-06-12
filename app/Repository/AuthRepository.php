@@ -30,14 +30,14 @@ class AuthRepository
 
         // Compare Db with Request Data
         if (!$user) {
-            return $data = [
-                'message' => 'user not found',
+            return [
+                'message' => 'User not found',
                 'status' => 'failed',
             ];
         }
 
         if (!Hash::check($user_password, $user->password)) {
-            return $data = [
+            return [
                 'message' => 'Invalid Credential',
                 'status' => 'failed',
             ];
@@ -46,7 +46,7 @@ class AuthRepository
         //Create an access token for the user
         $accessToken = $user->createToken('accessToken', $user->scopes)->accessToken;
 
-        return $data = [
+        return [
             'message' => 'Login Successful',
             'details' => $user,
             'access_token' => $accessToken,

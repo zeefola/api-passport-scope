@@ -47,7 +47,7 @@ class ProductController extends Controller
         $id = Validator::make($request->all(),['id' => 'required'])->validate();
         $product = $this->productrepository->getSingleProduct($id);
 
-        return response()->json(['Data' => $product]);
+        return response()->json($product);
     }
 
     public function updateProduct(Request $request)

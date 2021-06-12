@@ -47,7 +47,7 @@ class TransactionRepository
     {
         $transaction = Transaction::where('id',$data['transaction_id'])->first();
         $user = Transaction::where('user_id', Auth::id())
-        ->where('id',$data['transaction_id'])->first();
+            ->where('id',$data['transaction_id'])->first();
 
         if(!$transaction){
             return ['message' => 'Transaction Not Found'];
@@ -69,20 +69,19 @@ class TransactionRepository
 
     public function confirmPayment($data)
     {
-        $transaction = Transaction::where('user_id', Auth::id())
-                          ->where('id',$data['transaction_id'])->first();
-        $product = Product::where('id', $transaction->product_id)->first();
+        $transaction = Transaction::find($data['transaction_id']);
 
         if(!$transaction){
-            return ['message' => 'You\'re not Authorized'];
+            return ['error' => 'Transaction Not Found'];
+        }
+
+        $user = $transaction->product->user_id;
+        if($user != Auth::id()){
+            return ['error' => 'You\'re Not Authorized to Confirm the transaction'];
         }
 
         $transaction->update([
             $transaction->confirmed = true
-        ]);
-        //Subtract Product quantity from product table
-        $product->update([
-            $product->quantity -= $transaction->quantity
         ]);
 
         return [
@@ -93,12 +92,15 @@ class TransactionRepository
 
     public function cancelTransaction($data)
     {
-        $transaction = Transaction::where('user_id', Auth::id())
-                          ->where('id',$data['transaction_id'])->first();
-        $product = Product::where('id', $transaction->product_id)->first();
+        $transaction = Transaction::where('id',$data['transaction_id'])->first();
+        $user = Transaction::where('user_id', Auth::id())
+            ->where('id',$data['transaction_id'])->first();
 
         if(!$transaction){
-            return  ['message' => 'You\'re not Authorized'];
+            return  ['message' => 'Transaction Not Found'];
+        }
+        if(!$user){
+            return ['error' => 'You\'re Not Authorized to Cancel the transaction'];
         }
 
         $transaction->update([
@@ -106,9 +108,8 @@ class TransactionRepository
         ]);
         //Add Product quantity back to product table
         if($transaction->confirmed == true){
-            $product->update([
-                $product->quantity += $transaction->quantity
-            ]);
+            $transaction->product->quantity += $transaction->quantity;
+            $transaction->product->save();
         }
 
         return [
@@ -143,20 +144,43 @@ class TransactionRepository
 
     public function getProductTransactions($data)
     {
-        $transaction = Transaction::where('product_id',$data['product_id'])->get();
-        $product = Product::where('id',$data['product_id'])->first();
+        $product = Product::find($data['product_id']);
 
         if(!$product)
         {
-            return ['message' => 'Transaction Record Not found'];
+            return ['message' => 'Product Record Not found'];
         }
 
-        // if(!$transaction)
+        $transactions = $product->transactions;
+        // if($transactions != $product)
         // {
         //     return ['message' => 'Transaction Record Not found'];
         // }
 
         return [
+            'data' => $transactions,
+        ];
+    }
+
+    public function rejectPayment($data)
+    {
+        $transaction = Transaction::find($data['transaction_id']);
+
+        if(!$transaction){
+            return ['error' => 'Transaction Not Found'];
+        }
+
+        $user = $transaction->product->user_id;
+        if($user != Auth::id()){
+            return ['error' => 'You\'re Not Authorized to Reject the payment'];
+        }
+
+        $transaction->update([
+            $transaction->paid = false
+        ]);
+
+        return [
+            'message' => 'Payment Rejected',
             'data' => $transaction,
         ];
     }
