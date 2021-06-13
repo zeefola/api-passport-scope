@@ -12,11 +12,19 @@ class RegisterTest extends TestCase
     {
         $this->json('POST', '/api/register')
             ->assertStatus(422)
-            ->assertJsonStructure([
-                'name' => ['The name field is required. '],
-                'email' => ['The email field is required. '],
-                'password' => ['The password field is required. '],
+            ->assertJson([
+                // 'message' => 'The given data was invalid.',
+                'errors' => [
+                    'name' => ['The name field is required.'],
+                    'email' => ['The email field is required.'],
+                    'password' => ['The password field is required.']
+                ],
             ]);
+        // ->assertJsonStructure([
+        //     'name' => ['The name field is required. '],
+        //     'email' => ['The email field is required. '],
+        //     'password' => ['The password field is required. '],
+        // ]);
     }
 
     public function test_user_registered_successfully()
@@ -30,12 +38,14 @@ class RegisterTest extends TestCase
         $this->json('POST', '/api/register', $payload)
             ->assertStatus(200)
             ->assertJsonStructure([
-                'data' => [
-                    'id',
+                'message',
+                'details' => [
                     'name',
                     'email',
-                    'created_at',
+                    'scopes',
                     'updated_at',
+                    'created_at',
+                    'id',
                 ],
             ]);
     }
