@@ -16,11 +16,6 @@ class ProductTest extends TestCase
 
     // protected $user;
 
-<<<<<<< HEAD
-    public function setUp(): void
-    {
-        parent::setUp();
-=======
     // protected function setUp(): void
     // {
     //     parent::setUp();
@@ -44,7 +39,6 @@ class ProductTest extends TestCase
                 ]
             ]);
     }
->>>>>>> 40edd22be4752f0744821fcfc8aebfc547840780
 
     public function test_unaunthenticated_user_cannot_create_product()
     {
@@ -146,9 +140,6 @@ class ProductTest extends TestCase
         $this->json('GET', '/api/single-product?id=', $product->id,)
             ->assertOk();
     }
-<<<<<<< HEAD
-}
-=======
 
     public function test_product_can_be_deleted()
     {
@@ -162,4 +153,3 @@ class ProductTest extends TestCase
             ]);
     }
 }
->>>>>>> 40edd22be4752f0744821fcfc8aebfc547840780
