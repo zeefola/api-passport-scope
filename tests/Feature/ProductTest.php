@@ -16,9 +16,9 @@ class ProductTest extends TestCase
 
     protected $user;
 
-    public function logUser(): void
+    public function setUp(): void
     {
-        parent::logUser();
+        parent::setUp();
 
         $this->user = User::factory()->create();
         $this->actingAs($this->user, 'api'); //log user in through api

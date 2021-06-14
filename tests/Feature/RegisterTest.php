@@ -31,11 +31,12 @@ class RegisterTest extends TestCase
             ->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    'id',
                     'name',
                     'email',
-                    'created_at',
+                    'scopes',
                     'updated_at',
+                    'created_at',
+                    'id',
                 ],
             ]);
     }

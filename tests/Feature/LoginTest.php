@@ -35,6 +35,7 @@ class LoginTest extends TestCase
                     'id',
                     'name',
                     'email',
+                    'scopes',
                     'created_at',
                     'updated_at',
                     'access_token',
