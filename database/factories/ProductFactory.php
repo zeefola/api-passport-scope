@@ -22,7 +22,7 @@ class ProductFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->name(),
+            'name' => 'Mango Juice',
             'quantity' => 50,
             'amount' => 950,
             'sold' => false,
