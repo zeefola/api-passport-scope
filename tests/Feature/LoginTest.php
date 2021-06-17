@@ -9,6 +9,8 @@ use App\Models\User;
 
 class LoginTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_requires_email_and_password_to_login()
     {
         $this->json('POST', '/api/login')
@@ -33,17 +35,11 @@ class LoginTest extends TestCase
 
         $this->json('POST', '/api/login', $payload)
             ->assertStatus(200)
-            ->assertJsonStructure([
+            ->assertJson([
                 'message',
                 'details' => [
-                    'id',
-                    'name',
-                    'email',
-                    'scopes',
-                    'created_at',
-                    'updated_at',
+                    'email' => 'zeezee@test.com'
                 ],
-                'access_token',
             ]);
     }
 }

@@ -13,25 +13,8 @@ class ProductTest extends TestCase
 {
     use RefreshDatabase;
 
-    // public function __construct()
-    // {
-    //     $this->setUpFaker();
-    // }
-
-    // protected $user;
-
-    // protected function setUp(): void
-    // {
-    //     parent::setUp();
-
-    //     $this->user = User::factory()->create();
-    //     $this->actingAs($this->user, 'api');
-    // }
-
-
     public function test_products_required_inputs()
     {
-        // $this->withoutExceptionHandling();
         $user = User::factory()->create();
         $this->actingAs($user,'api')->json('POST', '/api/create-product')
             ->assertStatus(422)
@@ -74,7 +57,6 @@ class ProductTest extends TestCase
             'amount' => 150,
             'sold' => false,
             'active' => true,
-            // 'user_id' => Auth::id(),
         ];
         $user = User::factory()->create();
         $this->actingAs($user, 'api')
@@ -86,42 +68,29 @@ class ProductTest extends TestCase
     }
 
     public function test_product_name_already_exist(){
-      $product = [
-        'name' => 'Mango Juice',
-        'quantity' => 50,
-        'amount' => 950,
-        'sold' => false,
-        'active' => true,
-        'user_id' => 1,
-    ];
+
+        Product::factory()->create();
+
+        $product = [
+            'name' => 'Mango Juice',
+            'quantity' => 50,
+            'amount' => 950,
+            'sold' => false,
+            'active' => true,
+            'user_id' => 1,
+       ];
 
     $user = User::factory()->create();
 
     $this->actingAs($user, 'api')->json('POST', '/api/create-product', $product)
-          ->assertJson($product);
-    //   $this->assertDatabaseHas('products',['name' => 'Mango Juice']);
-    //         $response->assertJson([
-    //             'error' => 'Product Name Already exists'
-    //         ]);
-
-
+          ->assertJson(['error' => 'Product Name Already exists']);
     }
 
     public function test_a_product_can_be_updated()
     {
-        //     $product_name = (new ProductRepository()->createProduct(...));
-        //     $this->assertEquals(expected:0, $product_name);
-        // }
         $this->withoutExceptionHandling(); //display real error
 
-        $product = Product::factory()->create([
-            'name' => 'Orange Juice',
-            'quantity' => 90,
-            'amount' => 150,
-            'sold' => false,
-            'active' => true,
-            // 'user_id' => Auth::id(),
-        ]);
+        $product = Product::factory()->create();
 
         $user = User::factory()->create();
 
@@ -133,44 +102,24 @@ class ProductTest extends TestCase
         $this->actingAs($user, 'api')
             ->json('PUT', '/api/update-product?id=' . $product->id, $updatedData)
             ->assertOk()
-            // ->assertJson($data);
             ->assertJson(['data' => $updatedData]);
     }
 
     public function test_getting_all_products()
     {
         $this->withoutExceptionHandling();
-        $product = Product::factory()->count(4)->create([
-            'name' => 'Rasphberry',
-            'quantity' => 50,
-            'amount' => 200,
-            'sold' => false,
-            'active' => true,
-            'user_id' => 1,
-        ]);
-        $data = [
-            'products' => [
-                // 'id' => $product->id,
-                'name' => $product->name,
-                'amount' => $product->amount,
-                'sold' => $product->sold,
-                'active' => $product->active,
-                'user_id' => $product->user_id,
-            ]
-        ];
+        $product = Product::factory()->create();
         $this->json('GET', '/api/products')
             ->assertStatus(200)
-            ->assertJson($data);
-            // ->assertJsonStructure([
-            //     'id',
-            //     'name',
-            //     'quantity',
-            //     'sold',
-            //     'active',
-            //     'user_id',
-            //     'created_at',
-            //     'updated_at',
-            // ]);
+            ->assertJson([
+                'products' => array([
+                    'name' => $product->name,
+                    'amount' => $product->amount,
+                    'sold' => $product->sold,
+                    'active' => $product->active,
+                    'user_id' => $product->user_id,
+                ])
+            ]);
     }
 
     public function test_can_show_product_by_id()
@@ -193,55 +142,64 @@ class ProductTest extends TestCase
             ]);
     }
 
+    public function test_product_id_doesnt_exist()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user, 'api')->json('DELETE', '/api/delete-product?id=5')
+            ->assertStatus(200)
+            ->assertJson([
+                '' => 'Product Not Found'
+            ]);
+    }
+
     public function test_a_product_can_be_mark_as_restock()
     {
         $this->withoutExceptionHandling(); //display real error
         $user = User::factory()->create();
-        $product = Product::factory()->create([
-            'name' => 'Orange Juice',
-            'quantity' => 90,
-            'amount' => 150,
-            'sold' => false,
-            'active' => true,
-            'user_id' => $user->id,
-        ]);
-
-        $quantity = 20;
-        $updatedData = [
-            'quantity' => $product['quantity'] + $quantity,
-            // 'sold' => false,
-            // 'active' => true
-        ];
+        $product = Product::factory()->create();
 
         $this->actingAs($user, 'api')
-            ->json('PUT', '/api/restock-product?id=' . $product->id, $updatedData)
+            ->json('PUT', '/api/restock-product?id=' . $product->id, [
+                    'quantity' => 20,
+                    'sold' => false,
+                    'active' => true
+                ])
             ->assertOk()
-            ->assertJson(['data' => $updatedData]);
+            ->assertJson([
+                'message' => 'Product Restocked',
+                'data' => [
+                'name' => 'Mango Juice',
+                'quantity' => 70,
+                'sold' => false,
+                'active' => true
+            ]
+        ]);
     }
 
     public function test_a_product_can_be_mark_as_sold()
     {
         $this->withoutExceptionHandling(); //display real error
 
-        $product = Product::factory()->create([
-            'name' => 'Orange Juice',
-            'quantity' => 90,
-            'amount' => 150,
-            'sold' => false,
-            'active' => true,
-        ]);
+        $product = Product::factory()->create();
 
         $user = User::factory()->create();
 
-        $updatedData = [
-            'quantity' => 0,
-            'sold' => true,
-            'active' => false
-        ];
-
         $this->actingAs($user, 'api')
-            ->json('PUT', '/api/mark-as-sold?id=' . $product->id, $updatedData)
+            ->json('PUT', '/api/mark-as-sold?id=' . $product->id,[
+                'quantity' => 0,
+                'sold' => true,
+                'active' => false
+            ])
             ->assertOk()
-            ->assertJson(['data' => $updatedData]);
+            ->assertJson([
+                'message' => 'Marked as Sold',
+                'data' => [
+                    'name' => 'Mango Juice',
+                    'quantity' => 0,
+                    'sold' => true,
+                    'active' => false
+                ]
+             ]);
     }
 }

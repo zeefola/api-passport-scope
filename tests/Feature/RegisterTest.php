@@ -8,12 +8,13 @@ use Tests\TestCase;
 
 class RegisterTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_name_email_password_is_required_to_register()
     {
         $this->json('POST', '/api/register')
             ->assertStatus(422)
             ->assertJson([
-                // 'message' => 'The given data was invalid.',
                 'errors' => [
                     'name' => ['The name field is required.'],
                     'email' => ['The email field is required.'],
@@ -32,19 +33,11 @@ class RegisterTest extends TestCase
 
         $this->json('POST', '/api/register', $payload)
             ->assertStatus(200)
-            ->assertJson($payload);
-            // ->assertJsonStructure([
-            //     'data' => [
-            //         'message',
-            //         'details' => [
-            //             'name',
-            //             'email',
-            //             'scopes',
-            //             'updated_at',
-            //             'created_at',
-            //             'id',
-            //         ],
-            //     ],
-            // ]);
+            ->assertJson([
+                'message' => 'Registration successful',
+                'details' => [
+                    'name' => 'Zainab'
+                ],
+            ]);
     }
 }
