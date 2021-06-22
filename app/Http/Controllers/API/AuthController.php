@@ -28,11 +28,8 @@ class AuthController extends Controller
         ])->validate();
 
         //Register User and Return response
-        $user = $this->authrepository->register($validatedData);
-        return response()->json([
-            'message' => 'Registration successful',
-            'details' => $user,
-        ]);
+        $response = $this->authrepository->register($validatedData);
+        return response()->json($response);
     }
 
     public function login(Request $request)
@@ -52,13 +49,13 @@ class AuthController extends Controller
         return response()->json($response);
     }
 
-    public function logout(){
+    public function logout()
+    {
         $user = Auth::user()->token();
         $user->revoke();
         return response()->json([
             'message' => 'Logged Out Successfully'
         ]);
-
     }
 
     // public function validationError($validatedData)

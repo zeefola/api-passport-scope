@@ -10,15 +10,15 @@ class TransactionRepository
 {
     public function initializeTransaction($data)
     {
-        $product = Product::where('id',$data['product_id'])->first();
+        $product = Product::where('id', $data['product_id'])->first();
         $user = Product::where('user_id', Auth::id())
-           ->where('id',$data['product_id'])->first();
+            ->where('id', $data['product_id'])->first();
 
-        if(!$product){
+        if (!$product) {
             return ['message' => 'Product Not Found'];
         }
 
-        if($user){
+        if ($user) {
             return ['message' => 'You can\'t initiate transaction on your product'];
         }
         //Create Transaction
@@ -45,20 +45,20 @@ class TransactionRepository
 
     public function markAsPaid($data)
     {
-        $transaction = Transaction::where('id',$data['transaction_id'])->first();
+        $transaction = Transaction::where('id', $data['transaction_id'])->first();
         $user = Transaction::where('user_id', Auth::id())
-            ->where('id',$data['transaction_id'])->first();
+            ->where('id', $data['transaction_id'])->first();
 
-        if(!$transaction){
+        if (!$transaction) {
             return ['message' => 'Transaction Not Found'];
         }
 
-        if(!$user){
+        if (!$user) {
             return ['message' => 'You\'re Not Authorized'];
         }
 
         $transaction->update([
-         $transaction->paid = true
+            $transaction->paid = true
         ]);
 
         return [
@@ -71,12 +71,12 @@ class TransactionRepository
     {
         $transaction = Transaction::find($data['transaction_id']);
 
-        if(!$transaction){
+        if (!$transaction) {
             return ['error' => 'Transaction Not Found'];
         }
 
         $user = $transaction->product->user_id;
-        if($user != Auth::id()){
+        if ($user != Auth::id()) {
             return ['error' => 'You\'re Not Authorized to Confirm the transaction'];
         }
 
@@ -92,14 +92,14 @@ class TransactionRepository
 
     public function cancelTransaction($data)
     {
-        $transaction = Transaction::where('id',$data['transaction_id'])->first();
+        $transaction = Transaction::where('id', $data['transaction_id'])->first();
         $user = Transaction::where('user_id', Auth::id())
-            ->where('id',$data['transaction_id'])->first();
+            ->where('id', $data['transaction_id'])->first();
 
-        if(!$transaction){
+        if (!$transaction) {
             return  ['message' => 'Transaction Not Found'];
         }
-        if(!$user){
+        if (!$user) {
             return ['error' => 'You\'re Not Authorized to Cancel the transaction'];
         }
 
@@ -107,7 +107,7 @@ class TransactionRepository
             $transaction->cancel = true
         ]);
         //Add Product quantity back to product table
-        if($transaction->confirmed == true){
+        if ($transaction->confirmed == true) {
             $transaction->product->quantity += $transaction->quantity;
             $transaction->product->save();
         }
@@ -120,10 +120,9 @@ class TransactionRepository
 
     public function getSingleTransaction($data)
     {
-        $transaction = Transaction::where('id',$data['transaction_id'])->first();
+        $transaction = Transaction::where('id', $data['transaction_id'])->first();
 
-        if(!$transaction)
-        {
+        if (!$transaction) {
             return ['message' => 'Transaction Record Not found'];
         }
 
@@ -146,8 +145,7 @@ class TransactionRepository
     {
         $product = Product::find($data['product_id']);
 
-        if(!$product)
-        {
+        if (!$product) {
             return ['message' => 'Product Record Not found'];
         }
 
@@ -166,12 +164,12 @@ class TransactionRepository
     {
         $transaction = Transaction::find($data['transaction_id']);
 
-        if(!$transaction){
+        if (!$transaction) {
             return ['error' => 'Transaction Not Found'];
         }
 
         $user = $transaction->product->user_id;
-        if($user != Auth::id()){
+        if ($user != Auth::id()) {
             return ['error' => 'You\'re Not Authorized to Reject the payment'];
         }
 

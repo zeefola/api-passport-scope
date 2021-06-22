@@ -18,6 +18,30 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+
+        'App\Events\UserRegistered' => [
+            'App\Listeners\SendEmailNotification',
+        ],
+
+        'App\Events\TransactionInitialised' => [
+            'App\Listeners\SendInitilizationNotification',
+        ],
+
+        'App\Events\MarkAsPaid' => [
+            'App\Listeners\SendPaidNotification',
+        ],
+
+        'App\Events\PaymentConfirmed' => [
+            'App\Listeners\SendPaymentConfirmationNotification',
+        ],
+
+        'App\Events\PaymentRejected' => [
+            'App\Listeners\SendPaymentRejectionNotification',
+        ],
+
+        'App\Events\TransactionCancelled' => [
+            'App\Listeners\SendCancelledTransactionNotification',
+        ],
     ];
 
     /**

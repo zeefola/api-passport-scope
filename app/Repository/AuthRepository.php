@@ -4,13 +4,14 @@ namespace App\Repository;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use App\Events\UserRegistered;
 
 class AuthRepository
 {
     public function register($data)
     {
         //Create a record and send response to the controller
-        return User::create(
+        $user = User::create(
             [
                 'name' => $data['name'],
                 'email' => $data['email'],
@@ -18,6 +19,22 @@ class AuthRepository
                 'scopes' => ['user', 'all', 'products']
             ]
         );
+
+        $email_data = [
+            'mailTo' => $data['email'],
+            'subject' => 'Successful Registration',
+            'mail_body' => 'You\'re getting this mail because you successfully registered on our platform',
+            'button_name' => 'Click to Login',
+            'button_link' => 'http://localhost/api/login'
+        ];
+
+        event(new UserRegistered($email_data));
+
+        return [
+            'message' => 'Registration Successful',
+            'mail' => 'Mail sent check your inbox',
+            'details' => $user,
+        ];
     }
 
     public function login($data)
