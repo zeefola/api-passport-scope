@@ -21,6 +21,7 @@ class AuthRepository
         );
 
         $email_data = [
+            'username' => $data['name'],
             'mailTo' => $data['email'],
             'subject' => 'Successful Registration',
             'mail_body' => 'You\'re getting this mail because you successfully registered on our platform',

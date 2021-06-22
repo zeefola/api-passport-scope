@@ -29,8 +29,8 @@ class SendEmailNotification
     {
         //Send mail to the user
         $email_data = $event->email_data;
-        Mail::send('emails.registered', function ($m) use ($email_data) {
-            $m->to($email_data['toMail'])
+        Mail::send('emails.registered', $email_data, function ($m) use ($email_data) {
+            $m->to($email_data['mailTo'])
                 ->subject($email_data['subject']);
         });
     }
