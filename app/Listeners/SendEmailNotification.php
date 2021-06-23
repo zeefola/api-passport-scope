@@ -2,10 +2,12 @@
 
 namespace App\Listeners;
 
-use App\Events\UserRegistered;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Support\Facades\Mail;
+use App\Notifications\SendRegisterMailNotification;
+use App\Events\UserRegistered;
+use App\Models\User;
+
 
 class SendEmailNotification
 {
@@ -27,11 +29,14 @@ class SendEmailNotification
      */
     public function handle(UserRegistered $event)
     {
-        //Send mail to the user
-        $email_data = $event->email_data;
-        Mail::send('emails.registered', $email_data, function ($m) use ($email_data) {
-            $m->to($email_data['mailTo'])
-                ->subject($email_data['subject']);
-        });
+        // Fetch User from the event
+        $user = User::where('email',$event->email_data['mailTo'])
+          ->first();
+
+        //Send notification to the user
+        $user->notify(new SendRegisterMailNotification($event->email_data));
+
+
+
     }
 }
