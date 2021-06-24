@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Events\MarkAsPaid;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use App\Notifications\SendProductMarkAsPaidMailNotification;
 
 class SendPaidNotification
 {
@@ -26,6 +27,6 @@ class SendPaidNotification
      */
     public function handle(MarkAsPaid $event)
     {
-        //
+        $event->user->notify(new SendProductMarkAsPaidMailNotification($event->email_data));
     }
 }

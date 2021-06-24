@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Events\TransactionCancelled;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use App\Notifications\SendCancelTransactionMailNotification;
 
 class SendCancelledTransactionNotification
 {
@@ -26,6 +27,6 @@ class SendCancelledTransactionNotification
      */
     public function handle(TransactionCancelled $event)
     {
-        //
+        $event->user->notify(new SendCancelTransactionMailNotification($event->email_data));
     }
 }

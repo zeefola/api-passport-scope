@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class SendRegisterMailNotification extends Notification
+class SendInitialiseTransactionMailNotification extends Notification
 {
     use Queueable;
 
@@ -21,6 +21,8 @@ class SendRegisterMailNotification extends Notification
 
     public function __construct($email_data)
     {
+        //
+
         $this->email_data = $email_data;
     }
 
@@ -45,7 +47,7 @@ class SendRegisterMailNotification extends Notification
     {
         return (new MailMessage)
             ->subject($this->email_data['subject'])
-            ->view('emails.registered', ['data' => $this->email_data]);
+            ->view('emails.initialise_transaction', ['data' => $this->email_data]);
     }
 
     /**

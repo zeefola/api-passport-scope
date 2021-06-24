@@ -19,9 +19,14 @@ class TransactionInitialised
      *
      * @return void
      */
-    public function __construct()
+
+    public $email_data;
+    public $userData;
+
+    public function __construct($email_data, $userData)
     {
-        //
+        $this->email_data = $email_data;
+        $this->userData = $userData;
     }
 
     /**

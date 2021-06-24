@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Events\PaymentConfirmed;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use App\Notifications\SendPaymentConfirmationMailNotification;
 
 class SendPaymentConfirmationNotification
 {
@@ -26,6 +27,6 @@ class SendPaymentConfirmationNotification
      */
     public function handle(PaymentConfirmed $event)
     {
-        //
+        $event->userData->notify(new SendPaymentConfirmationMailNotification($event->email_data));
     }
 }

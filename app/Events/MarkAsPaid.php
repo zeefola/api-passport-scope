@@ -19,9 +19,14 @@ class MarkAsPaid
      *
      * @return void
      */
-    public function __construct()
+
+    public $email_data;
+    public $user;
+
+    public function __construct($email_data, $user)
     {
-        //
+        $this->email_data = $email_data;
+        $this->user = $user;
     }
 
     /**

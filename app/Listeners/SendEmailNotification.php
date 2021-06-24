@@ -30,13 +30,10 @@ class SendEmailNotification
     public function handle(UserRegistered $event)
     {
         // Fetch User from the event
-        $user = User::where('email',$event->email_data['mailTo'])
-          ->first();
+        $user = User::where('email', $event->email_data['mailTo'])
+            ->first();
 
         //Send notification to the user
         $user->notify(new SendRegisterMailNotification($event->email_data));
-
-
-
     }
 }

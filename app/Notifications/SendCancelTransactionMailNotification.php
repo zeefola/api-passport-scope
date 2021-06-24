@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class SendRegisterMailNotification extends Notification
+class SendCancelTransactionMailNotification extends Notification
 {
     use Queueable;
 
@@ -45,7 +45,7 @@ class SendRegisterMailNotification extends Notification
     {
         return (new MailMessage)
             ->subject($this->email_data['subject'])
-            ->view('emails.registered', ['data' => $this->email_data]);
+            ->view('emails.cancel_transaction', ['data' => $this->email_data]);
     }
 
     /**

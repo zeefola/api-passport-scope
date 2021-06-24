@@ -270,14 +270,10 @@
                                                         style="margin: 0; font-size: 50px; line-height: 1.5; text-align: center; word-break: break-word; mso-line-height-alt: 75px; margin-top: 0; margin-bottom: 0;">
                                                         <span style="font-size: 50px;"><strong><span
                                                                     style="font-size: 50px;"><span
-                                                                        style="font-size: 38px;">WELCOME</span></span></strong></span>
+                                                                        style="font-size: 38px;">Transaction
+                                                                        Initialized</span></span></strong></span>
                                                     </p>
-                                                    <p
-                                                        style="margin: 0; font-size: 34px; line-height: 1.5; text-align: center; word-break: break-word; mso-line-height-alt: 51px; margin-top: 0; margin-bottom: 0;">
-                                                        <span style="font-size: 34px;"><strong><span
-                                                                    style="font-size: 34px;"><span
-                                                                        style="color: #2190e3; font-size: 34px;">{{ $data['username'] }}</span></span></strong></span>
-                                                    </p>
+
                                                 </div>
                                             </div>
                                             <!--[if mso]></td></tr></table><![endif]-->
@@ -291,17 +287,7 @@
                                                         {{ $data['mail_body'] }}</p>
                                                 </div>
                                             </div>
-                                            <!--[if mso]></td></tr></table><![endif]-->
-                                            <div class="button-container" align="center"
-                                                style="padding-top:20px;padding-right:10px;padding-bottom:10px;padding-left:10px;">
-                                                <!--[if mso]><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0; border-collapse: collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;"><tr><td style="padding-top: 20px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px" align="center"><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ $data['button_link'] }}" style="height:39pt;width:210pt;v-text-anchor:middle;" arcsize="29%" stroke="false" fillcolor="#fc7318"><w:anchorlock/><v:textbox inset="0,0,0,0"><center style="color:#ffffff; font-family:Tahoma, Verdana, sans-serif; font-size:16px"><![endif]--><a
-                                                    href="{{ $data['button_link'] }}" target="_blank"
-                                                    style="-webkit-text-size-adjust: none; text-decoration: none; display: inline-block; color: #ffffff; background-color: #fc7318; border-radius: 15px; -webkit-border-radius: 15px; -moz-border-radius: 15px; width: auto; width: auto; border-top: 1px solid #fc7318; border-right: 1px solid #fc7318; border-bottom: 1px solid #fc7318; border-left: 1px solid #fc7318; padding-top: 10px; padding-bottom: 10px; font-family: Lato, Tahoma, Verdana, Segoe, sans-serif; text-align: center; mso-border-alt: none; word-break: keep-all;"><span
-                                                        style="padding-left:40px;padding-right:40px;font-size:16px;display:inline-block;letter-spacing:undefined;"><span
-                                                            style="font-size: 16px; line-height: 2; word-break: break-word; mso-line-height-alt: 32px;"><strong>{{ $data['button_name'] }}</strong></span></span></a>
-                                                <!--[if mso]></center></v:textbox></v:roundrect></td></tr></table><![endif]-->
-                                            </div>
-                                            <!--[if (!mso)&(!IE)]><!-->
+
                                         </div>
                                         <!--<![endif]-->
                                     </div>

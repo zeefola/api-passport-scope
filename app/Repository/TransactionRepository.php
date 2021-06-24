@@ -2,9 +2,15 @@
 
 namespace App\Repository;
 
+use App\Events\MarkAsPaid;
+use App\Events\TransactionInitialised;
+use App\Events\PaymentConfirmed;
+use App\Events\PaymentRejected;
+use App\Events\TransactionCancelled;
 use App\Models\Product;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class TransactionRepository
 {
@@ -37,9 +43,20 @@ class TransactionRepository
         ]);
 
 
+        $userData = User::where('id', $data['user_id'])->first();
+        //store email data in an array and dispatch the event
+        $email_data = [
+            'mailTo' => $userData->email,
+            'subject' => 'Transaction Initialized',
+            'mail_body' => 'You\'re getting this mail because you successfully initialized a transaction for a product',
+
+        ];
+        event(new TransactionInitialised($email_data, $userData));
+
         return [
             'message' => 'Transaction Initialized',
-            'data' => $data
+            'data' => $data,
+            'mail' => 'Mail Sent, Check your inbox'
         ];
     }
 
@@ -61,8 +78,18 @@ class TransactionRepository
             $transaction->paid = true
         ]);
 
+        //Store mail data in an array and fire the event
+        $user = $transaction->user;
+        $email_data = [
+            'mailTo' => $user->email,
+            'subject' => 'Transaction Mark As Paid',
+            'mail_body' => 'This is to inform you your transaction has been marked as paid, thank you for trading with us'
+        ];
+        event(new MarkAsPaid($email_data, $user));
+
         return [
             'message' => 'Marked as Paid',
+            'mail' => 'Successfully Sent',
             'data' => $transaction,
         ];
     }
@@ -76,6 +103,7 @@ class TransactionRepository
         }
 
         $user = $transaction->product->user_id;
+
         if ($user != Auth::id()) {
             return ['error' => 'You\'re Not Authorized to Confirm the transaction'];
         }
@@ -84,8 +112,17 @@ class TransactionRepository
             $transaction->confirmed = true
         ]);
 
+        //Store mail data in an array and fire the event
+        $userData = User::where('id', $user)->first();
+        $email_data = [
+            'mailTo' => $userData->email,
+            'subject' => 'Payment Confirmation',
+            'mail_body' => 'This is to inform you your payment has been confirmed, thank you for trading with us'
+        ];
+        event(new PaymentConfirmed($email_data, $userData));
+
         return [
-            'message' => 'Payment Confirmed',
+            'message' => 'Payment Confirmed, Mail Sent',
             'data' => $transaction,
         ];
     }
@@ -112,8 +149,17 @@ class TransactionRepository
             $transaction->product->save();
         }
 
+        //Store mail data in an array and fire the event
+        $user = $transaction->user;
+        $email_data = [
+            'mailTo' => $user->email,
+            'subject' => 'Transaction Cancelled',
+            'mail_body' => 'This is to inform you your transaction has been successfully cancelled, thank you for trading with us'
+        ];
+        event(new TransactionCancelled($email_data, $user));
+
         return [
-            'message' => 'Transaction Cancelled',
+            'message' => 'Transaction Cancelled, Check your mail',
             'data' => $transaction,
         ];
     }
@@ -177,8 +223,17 @@ class TransactionRepository
             $transaction->paid = false
         ]);
 
+        //Store mail data in an array and fire the event
+        $userData = User::where('id', $user)->first();
+        $email_data = [
+            'mailTo' => $userData->email,
+            'subject' => 'Payment Rejecttion',
+            'mail_body' => 'This is to inform you your payment has been successfully rejected. Do check bac for me updates, thank you for trading with us'
+        ];
+        event(new PaymentRejected($email_data, $userData));
+
         return [
-            'message' => 'Payment Rejected',
+            'message' => 'Payment Rejected, Check your mail',
             'data' => $transaction,
         ];
     }

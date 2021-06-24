@@ -20,7 +20,7 @@ class UserRegistered
      * @return void
      */
 
-    protected $emeil_data;
+    public $email_data;
 
     public function __construct($email_data)
     {
