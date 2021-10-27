@@ -34,8 +34,7 @@ class AuthRepository
         return [
             'message' => 'Registration Successful',
             'mail' => 'Mail sent check your inbox',
-            'details' => $user,
-            201
+            'details' => $user
         ];
     }
 
@@ -67,7 +66,7 @@ class AuthRepository
         return [
             'message' => 'Registration Successful',
             'mail' => 'Mail sent check your inbox',
-            'details' => $data,
+            'details' => $data
         ];
     }
 
@@ -83,15 +82,14 @@ class AuthRepository
         if (!$user) {
             return [
                 'message' => 'User not found',
-                'status' => 'failed',
-                404
+                'status' => 'failed'
             ];
         }
 
         if (!Hash::check($user_password, $user->password)) {
             return [
                 'message' => 'Invalid Credential',
-                'status' => 'failed',
+                'status' => 'failed'
             ];
         }
 
@@ -101,8 +99,7 @@ class AuthRepository
         return [
             'message' => 'Login Successful',
             'details' => $user,
-            'access_token' => $accessToken,
-            200
+            'access_token' => $accessToken
         ];
     }
 }

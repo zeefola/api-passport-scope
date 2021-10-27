@@ -37,7 +37,7 @@ class ProductRepository
         $product = Product::where('id', $id)->first();
 
         if (!$product) {
-            return ['error' => 'Product Not Found', 404];
+            return ['error' => 'Product Not Found'];
         }
 
         return ['data' => $product];
@@ -61,8 +61,7 @@ class ProductRepository
         $product->update($data);
         return [
             'message' => 'Product Updated',
-            'data' => $product,
-            200
+            'data' => $product
         ];
 
         // if($data['name']){
@@ -92,8 +91,7 @@ class ProductRepository
         $product->delete($data);
         return  [
             'message' => 'Product Deleted',
-            'data' => [],
-            204
+            'data' => []
         ];
     }
 
@@ -119,8 +117,7 @@ class ProductRepository
 
         return [
             'message' => 'Product Restocked',
-            'data' => $product,
-            200
+            'data' => $product
         ];
     }
 
@@ -131,11 +128,11 @@ class ProductRepository
             ->where('id', $data['id'])->first();
 
         if (!$product) {
-            return ['error' => 'Product Not Found', 404];
+            return ['error' => 'Product Not Found'];
         }
 
         if (!$user) {
-            return ['error' => 'You\'re not Authorized', 401];
+            return ['error' => 'You\'re not Authorized'];
         }
 
         if ($product->sold == true) {
