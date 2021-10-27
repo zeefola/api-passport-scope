@@ -35,6 +35,39 @@ class AuthRepository
             'message' => 'Registration Successful',
             'mail' => 'Mail sent check your inbox',
             'details' => $user,
+            201
+        ];
+    }
+
+    public function multiRegister($data)
+    {
+        //Create a record and send response to the controller
+        foreach ($data['users'] as $key => $aUserData) {
+            User::create(
+                [
+                    'name' => $aUserData['name'],
+                    'email' => $aUserData['email'],
+                    'password' => bcrypt($aUserData['password']),
+                    'scopes' => ['user', 'all', 'products']
+                ]
+            );
+        }
+
+        $email_data = [
+            'username' => $aUserData['name'],
+            'mailTo' => $aUserData['email'],
+            'subject' => 'Successful Registration',
+            'mail_body' => 'You\'re getting this mail because you successfully registered on our platform',
+            'button_name' => 'Click to Login',
+            'button_link' => 'http://localhost/api/login'
+        ];
+
+        event(new UserRegistered($email_data));
+
+        return [
+            'message' => 'Registration Successful',
+            'mail' => 'Mail sent check your inbox',
+            'details' => $data,
         ];
     }
 
@@ -51,6 +84,7 @@ class AuthRepository
             return [
                 'message' => 'User not found',
                 'status' => 'failed',
+                404
             ];
         }
 
@@ -68,6 +102,7 @@ class AuthRepository
             'message' => 'Login Successful',
             'details' => $user,
             'access_token' => $accessToken,
+            200
         ];
     }
 }

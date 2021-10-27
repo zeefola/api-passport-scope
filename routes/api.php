@@ -22,6 +22,8 @@ use App\Http\Controllers\API\TransactionController;
 // });
 
 Route::post('/register', [AuthController::class, 'register']);
+//Register multiple user
+Route::post('/multi-register', [AuthController::class, 'multiRegister']);
 Route::post('/login', [AuthController::class, 'login']);
 
 //Fetch Product
@@ -30,7 +32,7 @@ Route::get('/single-product', [ProductController::class, 'getSingleProduct']);
 
 Route::middleware('auth:api')->group(function () {
 
-    Route::post('/logout', [AuthController::class,'logout']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 
     //Product Routes
     Route::post('/create-product', [ProductController::class, 'createProduct']);

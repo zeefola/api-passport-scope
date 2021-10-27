@@ -32,6 +32,20 @@ class AuthController extends Controller
         return response()->json($response);
     }
 
+    public function multiRegister(Request $request)
+    {
+        // Validate what's coming in
+        $validatedData = Validator::make($request->all(), [
+            'users.*.name' => 'bail|required',
+            'users.*.email' => 'bail|required|email|unique:users',
+            'users.*.password' => 'bail|required'
+        ])->validate();
+
+        //Register User and Return response
+        $response = $this->authrepository->multiRegister($validatedData);
+        return response()->json($response, 201);
+    }
+
     public function login(Request $request)
     {
         //validate users info
@@ -57,6 +71,7 @@ class AuthController extends Controller
             'message' => 'Logged Out Successfully'
         ]);
     }
+
 
     // public function validationError($validatedData)
     // {
