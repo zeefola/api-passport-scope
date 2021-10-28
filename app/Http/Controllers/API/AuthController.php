@@ -12,11 +12,18 @@ use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller
 {
-    private $authrepository;
+    /**
+     *  @var AuthRepository
+     */
+    private $auth;
 
-    public function __construct(AuthRepository $authrepository) //constructor for the repository
+    /**
+     * AuthController Constructor
+     */
+
+    public function __construct(AuthRepository $auth)
     {
-        $this->authrepository = $authrepository;
+        $this->auth = $auth;
     }
     /**
      *  @param Request $request
@@ -33,7 +40,7 @@ class AuthController extends Controller
         ])->validate();
 
         //Register User and Return response
-        $response = $this->authrepository->register($validatedData);
+        $response = $this->auth->register($validatedData);
         return response()->json($response);
     }
 
@@ -41,7 +48,6 @@ class AuthController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-
     public function multiRegister(Request $request): JsonResponse
     {
         // Validate what's coming in
@@ -52,7 +58,7 @@ class AuthController extends Controller
         ])->validate();
 
         //Register User and Return response
-        $response = $this->authrepository->multiRegister($validatedData);
+        $response = $this->auth->multiRegister($validatedData);
         return response()->json($response, 201);
     }
 
@@ -60,7 +66,7 @@ class AuthController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function login(Request $request)
+    public function login(Request $request): JsonResponse
     {
         //validate users info
         $validatedData = Validator::make(
@@ -72,8 +78,7 @@ class AuthController extends Controller
         )->validate();
 
 
-        $response = $this->authrepository->login($validatedData);
-
+        $response = $this->auth->login($validatedData);
         return response()->json($response);
     }
 

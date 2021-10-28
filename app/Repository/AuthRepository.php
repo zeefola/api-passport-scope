@@ -2,12 +2,25 @@
 
 namespace App\Repository;
 
-use App\Models\User;
+use App\Http\Resources\User;
+use App\Repository\Actors\UserActor;
 use Illuminate\Support\Facades\Hash;
 use App\Events\UserRegistered;
 
 class AuthRepository
 {
+    /**
+     * @var UserActor
+     * */
+    private $user;
+
+    /** AuthRepository constructor
+     * @param UserActor $user
+     */
+    public function __construct(UserActor $user)
+    {
+        $this->user = $user;
+    }
     /**
      * Register new user
      * @param $data
@@ -16,7 +29,7 @@ class AuthRepository
     public function register($data): array
     {
         //Create a record and send response to the controller
-        $user = User::create(
+        $this->user->create(
             [
                 'name' => $data['name'],
                 'email' => $data['email'],
@@ -37,9 +50,8 @@ class AuthRepository
         event(new UserRegistered($email_data));
 
         return [
-            'message' => 'Registration Successful',
-            'mail' => 'Mail sent check your inbox',
-            'details' => $user
+            'error' => false,
+            'msg' => 'Registration Successful. Check your inbox for confirmation'
         ];
     }
 
@@ -52,7 +64,7 @@ class AuthRepository
     {
         //Create a record and send response to the controller
         foreach ($data['users'] as $key => $aUserData) {
-            User::create(
+            $this->user->create(
                 [
                     'name' => $aUserData['name'],
                     'email' => $aUserData['email'],
@@ -74,13 +86,12 @@ class AuthRepository
         event(new UserRegistered($email_data));
 
         return [
-            'message' => 'Registration Successful',
-            'mail' => 'Mail sent check your inbox',
-            'details' => $data
+            'error' => false,
+            'msg' => 'Registration Successful. Check your inbox for confirmation',
         ];
     }
     /**
-     * ogin UserL
+     * Login User
      * @param $data
      * @return array []
      */
@@ -91,29 +102,30 @@ class AuthRepository
         $user_password = $data['password'];
 
         //Get User's Record
-        $user = User::where('email', $user_email)->first();
+        $user = $this->user->where('email', $user_email)->first();
 
         // Compare Db with Request Data
         if (!$user) {
             return [
-                'message' => 'User not found',
-                'status' => 'failed'
+                'error' => true,
+                'msg' => 'User not found',
             ];
         }
 
         if (!Hash::check($user_password, $user->password)) {
             return [
-                'message' => 'Invalid Credential',
-                'status' => 'failed'
+                'error' => true,
+                'mgs' => 'Invalid Credential',
             ];
         }
 
         //Create an access token for the user
         $accessToken = $user->createToken('accessToken', $user->scopes)->accessToken;
-
+        User::withoutWrapping();
         return [
-            'message' => 'Login Successful',
-            'details' => $user,
+            'error' => false,
+            'msg' => 'Login Successful',
+            'data' => new User($user),
             'access_token' => $accessToken
         ];
     }

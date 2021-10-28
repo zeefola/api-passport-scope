@@ -6,10 +6,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
+use Illuminate\Support\Facades\Event;
+use Laravel\Passport\Passport;
 
 class LoginTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, WithFaker;
 
     public function test_requires_email_and_password_to_login()
     {
@@ -26,20 +28,22 @@ class LoginTest extends TestCase
 
     public function test_user_logins_successfully()
     {
-        User::factory()->create([
+        $this->withoutExceptionHandling();
+        $user = User::factory()->create([
             'email' => 'zeezee@test.com',
             'password' => bcrypt('123456'),
         ]);
 
-        $payload = ['email' => 'zeezee@test.com', 'password' => '123456'];
+        Passport::actingAs($user);
 
-        $this->json('POST', '/api/login', $payload)
-            ->assertStatus(200)
-            ->assertJson([
-                'message',
-                'details' => [
-                    'email' => 'zeezee@test.com'
-                ],
-            ]);
+        $this->json('POST', '/api/login', [
+            'email' => $user->email,
+            'password' => '123456'
+        ])->assertJson([
+            'error' => false,
+            'msg' => 'Login Successful',
+        ]);
+
+        $this->assertAuthenticatedAs($user);
     }
 }

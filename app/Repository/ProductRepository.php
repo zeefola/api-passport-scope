@@ -12,8 +12,8 @@ class ProductRepository
 
     /**
      * @var ProductActor
-     * private $product
      */
+    private $product;
 
     /**
      * ProductRepository constructor
