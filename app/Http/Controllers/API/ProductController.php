@@ -11,14 +11,26 @@ use Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
-    protected $productrepository;
+    /** @var ProductRepository
+     *
+     */
+    protected $product;
 
-    public function __construct(ProductRepository $productrepository)
+    /**
+     * ProductController constructor
+     * @param product $product
+     */
+    public function __construct(ProductRepository $product)
     {
-        $this->productrepository = $productrepository;
+        $this->product = $product;
     }
 
-    public function createProduct(Request $request)
+    /**
+     * Create a new product
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function createProduct(Request $request): JsonResponse
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
@@ -28,25 +40,21 @@ class ProductController extends Controller
         ])->validate();
 
         //Create product record
-        $product = $this->productrepository->createProduct($validatedData);
-        return response()->json($product);
-        // return response()->json([
-        //     'message' => 'Product Created Successfully',
-        //     'product' => $product
-        // ]);
+        return response()->json($this->product->createProduct($validatedData));
     }
 
     /**
+     * Get all Product
      * @return JsonResponse
      */
 
     public function getAllProduct(): JsonResponse
     {
-        $product = $this->productrepository->getAllProduct();
-        return response()->json(['products' => $product]);
+        return response()->json($this->product->getAllProduct());
     }
 
     /**
+     * Get a single product
      * @param Request $request
      * @return JsonResponse
      */
@@ -55,12 +63,11 @@ class ProductController extends Controller
     {
         //Validate what's coming in
         $id = Validator::make($request->all(), ['id' => 'required'])->validate();
-        $product = $this->productrepository->getSingleProduct($id);
-
-        return response()->json($product);
+        return response()->json($this->product->getSingleProduct($id));
     }
 
     /**
+     * Update product data
      * @param Request $request
      * @return JsonResponse
      */
@@ -77,11 +84,12 @@ class ProductController extends Controller
             'active' => 'bail|sometimes|required'
         ])->validate();
 
-        $response = $this->productrepository->updateProduct($validatedData);
+        $response = $this->product->updateProduct($validatedData);
         return response()->json($response);
     }
 
     /**
+     * Delete a product record
      * @param Request $request
      * @return JsonResponse
      */
@@ -93,11 +101,12 @@ class ProductController extends Controller
             'id' => 'bail|required',
         ])->validate();
 
-        $response = $this->productrepository->deleteProduct($validatedData);
+        $response = $this->product->deleteProduct($validatedData);
         return response()->json($response);
     }
 
     /**
+     * Restock a particular product
      * @param Request $request
      * @return JsonResponse
      */
@@ -110,11 +119,12 @@ class ProductController extends Controller
             'quantity' => 'bail|required',
         ])->validate();
 
-        $response = $this->productrepository->restockProduct($validatedData);
+        $response = $this->product->restockProduct($validatedData);
         return response()->json($response);
     }
 
     /**
+     * Mark a product as sold
      * @param Request $request
      * @return JsonResponse
      */
@@ -126,7 +136,7 @@ class ProductController extends Controller
             'id' => 'bail|required',
         ])->validate();
 
-        $response = $this->productrepository->markAsSold($validatedData);
+        $response = $this->product->markAsSold($validatedData);
         return response()->json($response);
     }
 }

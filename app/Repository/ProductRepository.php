@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Models\Product;
+use App\Repository\Actors\ProductActor;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\Product;
 use App\Http\Resources\Products;
@@ -10,16 +10,40 @@ use App\Http\Resources\Products;
 class ProductRepository
 {
 
-    public function createProduct($productData)
+    /**
+     * @var ProductActor
+     * private $product
+     */
+
+    /**
+     * ProductRepository constructor
+     * @param ProductActor $product
+     */
+
+    public function __construct(ProductActor $product)
+    {
+        $this->product = $product;
+    }
+
+    /**
+     * Create new product record
+     * @param $productData
+     * @return array
+     */
+
+    public function createProduct($productData): array
     {
         //Check if product name already exists
-        $db_data = Product::where('name', $productData['name'])->exists();
+        $db_data = $this->product->where('name', $productData['name'])->exists();
 
         if ($db_data) {
-            return ['error' => 'Product Name Already exists'];
+            return [
+                'error' => true,
+                'msg' => 'Product Name Already exists'
+            ];
         }
 
-        return Product::create([
+        $this->product->create([
             'name' => $productData['name'],
             'quantity' => $productData['quantity'],
             'amount' => $productData['amount'],
@@ -27,88 +51,146 @@ class ProductRepository
             'active' => true,
             'user_id' => Auth::id(),
         ]);
+
+        $product = $this->product->findBy('name', $productData['name']);
+
+        Product::withoutWrapping();
+
+        return [
+            'error' => false,
+            'msg' => 'Product Created Successfully',
+            'data' => new Product($product)
+        ];
     }
 
-    public function getAllProduct()
+    /** Get all Product
+     * @return Products
+     */
+
+    public function getAllProduct(): Products
     {
-        return Product::where('sold', false)->get();
+        $limit = request()->input('imit') ?? 25;
+        $products = $this->product->where('sold', false)->paginate($limit);
+
+        return new Products($products);
     }
+
+    /** Get a product record
+     * @param $id
+     * @return Product | array
+     */
 
     public function getSingleProduct($id)
     {
-        $product = Product::where('id', $id)->first();
+        $product = $this->product->where('id', $id)->first();
 
         if (!$product) {
-            return ['error' => 'Product Not Found'];
+            return [
+                'error' => true,
+                'msg' => 'Product Not Found'
+            ];
         }
 
-        return ['data' => $product];
+        Product::withoutWrapping();
+        return new Product($product);
     }
-
-    public function updateProduct($data)
+    /**
+     * Update product information
+     * @param $data
+     * @retun array
+     */
+    public function updateProduct($data): array
     {
-        // $result = [];
-        $product = Product::where('id', $data['id'])->first();
-        $user = Product::where('user_id', Auth::id())
+        $product = $this->product->where('id', $data['id'])->first();
+        $user = $this->product->where('user_id', Auth::id())
             ->where('id', $data['id'])->first();
 
         if (!$product) {
-            return ['error' => 'Product Not Found'];
+            return [
+                'error' => true,
+                'msg' => 'Product Not Found'
+            ];
         }
 
         if (!$user) {
-            return ['error' => 'You\'re not Authorized'];
+            return [
+                'error' => true,
+                'msg' =>  'You\'re not Authorized'
+            ];
         }
 
         $product->update($data);
+        Product::withoutWrapping();
         return [
-            'message' => 'Product Updated',
-            'data' => $product
+            'error' => false,
+            'msg' => 'Product Updated',
+            'data' => new Product($product),
         ];
-
-        // if($data['name']){
-        //     $result['name'] = $data['name'];
-        // }
     }
 
-    public function deleteProduct($data)
+    /** Delete a product
+     * @param $data
+     * @return array
+     */
+
+    public function deleteProduct($data): array
     {
-        // $product = Product::find($data['id']);
-        $product = Product::where('id', $data['id'])->first();
-        $user = Product::where('user_id', Auth::id())
+        $product = $this->product->where('id', $data['id'])->first();
+        $user = $this->product->where('user_id', Auth::id())
             ->where('id', $data['id'])->first();
 
         if (!$product) {
-            return ['error' => 'Product Not Found'];
+            return [
+                'error' => true,
+                'msg' => 'Product Not Found'
+            ];
         }
 
         if (!$user) {
-            return ['error' => 'You\'re not Authorized'];
+            return [
+                'error' => true,
+                'msg' => 'You\'re not Authorized'
+            ];
         }
 
         if ($product->sold == true) {
-            return ['error' => 'You can\'t delete a sold out product'];
+            return [
+                'error' => true,
+                'msg' => 'You can\'t delete a sold out product'
+            ];
         }
 
         $product->delete($data);
         return  [
-            'message' => 'Product Deleted',
+            'error' => false,
+            'msg' => 'Product Deleted',
             'data' => []
         ];
     }
 
-    public function restockProduct($data)
+    /** Restock a particular product
+     * @param $data
+     * @return array
+     */
+
+    public function restockProduct($data): array
     {
-        $product = Product::where('id', $data['id'])->first();
-        $user = Product::where('user_id', Auth::id())
+        $product = $this->product->where('id', $data['id'])->first();
+        $user = $this->product->where('user_id', Auth::id())
             ->where('id', $data['id'])->first();
 
         if (!$product) {
-            return ['error' => 'Product Not Found'];
+            return [
+                'error' => true,
+                'msg'  => 'Product Not Found'
+            ];
         }
 
         if (!$user) {
-            return ['error' => 'You\'re not Authorized'];
+            return [
+                'error' => true,
+                'msg' => 'You\'re not Authorized'
+            ];
         }
 
         $product->update([
@@ -116,29 +198,44 @@ class ProductRepository
             $product->sold = false,
             $product->active = true
         ]);
-
+        Product::withoutWrapping();
         return [
-            'message' => 'Product Restocked',
-            'data' => $product
+            'error' => false,
+            'msg' => 'Product Restocked',
+            'data' => new Product($product),
         ];
     }
 
-    public function markAsSold($data)
+    /** Mark a product as sold out
+     * @param $data
+     * @return array
+     */
+
+    public function markAsSold($data): array
     {
-        $product = Product::where('id', $data['id'])->first();
-        $user = Product::where('user_id', Auth::id())
+        $product = $this->product->where('id', $data['id'])->first();
+        $user = $this->product->where('user_id', Auth::id())
             ->where('id', $data['id'])->first();
 
         if (!$product) {
-            return ['error' => 'Product Not Found'];
+            return [
+                'error' => true,
+                'msg' => 'Product Not Found'
+            ];
         }
 
         if (!$user) {
-            return ['error' => 'You\'re not Authorized'];
+            return [
+                'error' => true,
+                'msg' => 'You\'re not Authorized'
+            ];
         }
 
         if ($product->sold == true) {
-            return ['error' => 'Product is already sold out'];
+            return [
+                'error' => true,
+                'msg' => 'Product is already sold out'
+            ];
         }
 
         $product->update([
@@ -146,9 +243,13 @@ class ProductRepository
             $product->sold = true,
             $product->active = false
         ]);
+
+        Product::withoutWrapping();
         return [
-            'message' => 'Marked as Sold',
-            'data' => $product
+            'error' => false,
+            'msg' => 'Marked as Sold',
+            'data' => new Product($product)
+
         ];
     }
 }

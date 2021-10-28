@@ -18,6 +18,7 @@ class Product extends JsonResource
     {
         return [
             'id' => (string)$this->id,
+            'name' => (string)$this->name,
             'quantity' => (int)$this->quantity,
             'amount' => (float)$this->amount,
             'sold' => (bool) $this->sold,

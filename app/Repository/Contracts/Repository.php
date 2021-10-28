@@ -2,6 +2,8 @@
 
 namespace App\Repository\Contracts;
 
+/** Abstract Class for working with the model */
+
 abstract class Repository implements RepositoryInterface
 {
 
