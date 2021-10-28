@@ -8,6 +8,7 @@ use App\Repository\AuthRepository;
 use Illuminate\Support\Facades\Auth;
 // use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller
 {
@@ -17,8 +18,12 @@ class AuthController extends Controller
     {
         $this->authrepository = $authrepository;
     }
+    /**
+     *  @param Request $request
+     * @return JsonResponse
+     */
 
-    public function register(Request $request)
+    public function register(Request $request): JsonResponse
     {
         // Validate what's coming in
         $validatedData = Validator::make($request->all(), [
@@ -32,7 +37,12 @@ class AuthController extends Controller
         return response()->json($response);
     }
 
-    public function multiRegister(Request $request)
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+
+    public function multiRegister(Request $request): JsonResponse
     {
         // Validate what's coming in
         $validatedData = Validator::make($request->all(), [
@@ -46,6 +56,10 @@ class AuthController extends Controller
         return response()->json($response, 201);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function login(Request $request)
     {
         //validate users info

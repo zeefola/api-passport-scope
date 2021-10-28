@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Repository\ProductRepository;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
@@ -35,22 +36,36 @@ class ProductController extends Controller
         // ]);
     }
 
-    public function getAllProduct()
+    /**
+     * @return JsonResponse
+     */
+
+    public function getAllProduct(): JsonResponse
     {
-       $product = $this->productrepository->getAllProduct();
-      return response()->json(['products' =>$product]);
+        $product = $this->productrepository->getAllProduct();
+        return response()->json(['products' => $product]);
     }
 
-    public function getSingleProduct(Request $request)
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+
+    public function getSingleProduct(Request $request): JsonResponse
     {
         //Validate what's coming in
-        $id = Validator::make($request->all(),['id' => 'required'])->validate();
+        $id = Validator::make($request->all(), ['id' => 'required'])->validate();
         $product = $this->productrepository->getSingleProduct($id);
 
         return response()->json($product);
     }
 
-    public function updateProduct(Request $request)
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+
+    public function updateProduct(Request $request): JsonResponse
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
@@ -66,7 +81,12 @@ class ProductController extends Controller
         return response()->json($response);
     }
 
-    public function deleteProduct(Request $request)
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+
+    public function deleteProduct(Request $request): JsonResponse
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
@@ -77,7 +97,12 @@ class ProductController extends Controller
         return response()->json($response);
     }
 
-    public function restockProduct(Request $request)
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+
+    public function restockProduct(Request $request): JsonResponse
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
@@ -89,7 +114,12 @@ class ProductController extends Controller
         return response()->json($response);
     }
 
-    public function markAsSold(Request $request)
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+
+    public function markAsSold(Request $request): JsonResponse
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [

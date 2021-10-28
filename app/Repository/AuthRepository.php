@@ -8,7 +8,12 @@ use App\Events\UserRegistered;
 
 class AuthRepository
 {
-    public function register($data)
+    /**
+     * Register new user
+     * @param $data
+     * @return array []
+     */
+    public function register($data): array
     {
         //Create a record and send response to the controller
         $user = User::create(
@@ -38,7 +43,12 @@ class AuthRepository
         ];
     }
 
-    public function multiRegister($data)
+    /** Register multiple users
+     * @param $data
+     * @return array []
+     */
+
+    public function multiRegister($data): array
     {
         //Create a record and send response to the controller
         foreach ($data['users'] as $key => $aUserData) {
@@ -69,8 +79,13 @@ class AuthRepository
             'details' => $data
         ];
     }
+    /**
+     * ogin UserL
+     * @param $data
+     * @return array []
+     */
 
-    public function login($data)
+    public function login($data): array
     {
         $user_email = $data['email'];
         $user_password = $data['password'];

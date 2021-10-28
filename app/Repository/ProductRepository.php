@@ -4,6 +4,8 @@ namespace App\Repository;
 
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\Product;
+use App\Http\Resources\Products;
 
 class ProductRepository
 {
