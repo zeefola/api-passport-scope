@@ -7,28 +7,67 @@ use App\Events\TransactionInitialised;
 use App\Events\PaymentConfirmed;
 use App\Events\PaymentRejected;
 use App\Events\TransactionCancelled;
-use App\Models\Product;
-use App\Models\Transaction;
+use App\Repository\Actors\ProductActor;
+use App\Repository\Actors\UserActor;
+use App\Repository\Actors\TransactionActor;
+
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
+use App\Http\Resources\Transaction;
+use App\Http\Resources\Transactions;
 
 class TransactionRepository
 {
-    public function initializeTransaction($data)
+    /**
+     * @var ProductActor
+     */
+    private $product;
+    /**
+     * @var UserActor
+     */
+    private $user;
+    /**
+     * @var TransactionActor
+     */
+    private $transaction;
+
+    /**
+     * TransactionRepository constructor
+     * @param TransactionActor $transaction
+     * @param ProductActor $product
+     * @param UserActor $user
+     */
+    public function __construct(TransactionActor $transaction, ProductActor $product, UserActor $user)
     {
-        $product = Product::where('id', $data['product_id'])->first();
-        $user = Product::where('user_id', Auth::id())
+        $this->transaction = $transaction;
+        $this->user = $user;
+        $this->product = $product;
+    }
+    /**
+     * intialize transaction on a product
+     * @param $data []
+     * @return array
+     */
+    public function initializeTransaction($data): array
+    {
+        $product = $this->product->where('id', $data['product_id'])->first();
+        $user = $this->product->where('user_id', Auth::id())
             ->where('id', $data['product_id'])->first();
 
         if (!$product) {
-            return ['message' => 'Product Not Found'];
+            return [
+                'error' => true,
+                'msg' => 'Product Not Found'
+            ];
         }
 
         if ($user) {
-            return ['message' => 'You can\'t initiate transaction on your product'];
+            return [
+                'error' => true,
+                'msg' => 'You can\'t initiate transaction on your product'
+            ];
         }
         //Create Transaction
-        $data = Transaction::create([
+        $data = $this->transaction->create([
             'user_id' => Auth::id(),
             'product_id' => $data['product_id'],
             'quantity' => $data['quantity'],
@@ -43,7 +82,7 @@ class TransactionRepository
         ]);
 
 
-        $userData = User::where('id', $data['user_id'])->first();
+        $userData = $this->user->where('id', $data['user_id'])->first();
         //store email data in an array and dispatch the event
         $email_data = [
             'mailTo' => $userData->email,
@@ -52,26 +91,36 @@ class TransactionRepository
 
         ];
         event(new TransactionInitialised($email_data, $userData));
-
+        Transaction::withoutWrapping();
         return [
-            'message' => 'Transaction Initialized',
-            'data' => $data,
-            'mail' => 'Mail Sent, Check your inbox'
+            'error' => false,
+            'msg' => 'Transaction Initialized. Check your inbox for the details',
+            'data' => new Transaction($data)
         ];
     }
-
-    public function markAsPaid($data)
+    /**
+     * Mark transaction as paid
+     * @param $data []
+     * @return array
+     */
+    public function markAsPaid($data): array
     {
-        $transaction = Transaction::where('id', $data['transaction_id'])->first();
-        $user = Transaction::where('user_id', Auth::id())
+        $transaction = $this->transaction->where('id', $data['transaction_id'])->first();
+        $user = $this->transaction->where('user_id', Auth::id())
             ->where('id', $data['transaction_id'])->first();
 
         if (!$transaction) {
-            return ['message' => 'Transaction Not Found'];
+            return [
+                'error' => true,
+                'msg' => 'Transaction Not Found'
+            ];
         }
 
         if (!$user) {
-            return ['message' => 'You\'re Not Authorized'];
+            return [
+                'error' => true,
+                'msg' => 'You\'re Not Authorized'
+            ];
         }
 
         $transaction->update([
@@ -87,25 +136,38 @@ class TransactionRepository
         ];
         event(new MarkAsPaid($email_data, $user));
 
+        Transaction::withoutWrapping();
         return [
-            'message' => 'Marked as Paid',
+            'error' => false,
+            'msg' => 'Marked as Paid',
             'mail' => 'Successfully Sent',
-            'data' => $transaction,
+            'data' => new Transaction($transaction),
         ];
     }
 
-    public function confirmPayment($data)
+    /**
+     * Confirm payment
+     * @param $data []
+     * @return array
+     */
+    public function confirmPayment($data): array
     {
-        $transaction = Transaction::find($data['transaction_id']);
+        $transaction = $this->transaction->find($data['transaction_id']);
 
         if (!$transaction) {
-            return ['error' => 'Transaction Not Found'];
+            return [
+                'error' => true,
+                'msg' => 'Transaction Not Found'
+            ];
         }
 
         $user = $transaction->product->user_id;
 
         if ($user != Auth::id()) {
-            return ['error' => 'You\'re Not Authorized to Confirm the transaction'];
+            return [
+                'error' => true,
+                'msg' => 'You\'re Not Authorized to Confirm the transaction'
+            ];
         }
 
         $transaction->update([
@@ -113,7 +175,7 @@ class TransactionRepository
         ]);
 
         //Store mail data in an array and fire the event
-        $userData = User::where('id', $user)->first();
+        $userData = $this->user->where('id', $user)->first();
         $email_data = [
             'mailTo' => $userData->email,
             'subject' => 'Payment Confirmation',
@@ -121,23 +183,37 @@ class TransactionRepository
         ];
         event(new PaymentConfirmed($email_data, $userData));
 
+        Transaction::withoutWrapping();
         return [
-            'message' => 'Payment Confirmed, Mail Sent',
-            'data' => $transaction,
+            'error' => false,
+            'msg' => 'Payment Confirmed, Mail Sent',
+            'data' => new Transaction($transaction),
         ];
     }
 
-    public function cancelTransaction($data)
+    /**
+     * Cancel transaction
+     * @param $data
+     * @return array
+     */
+
+    public function cancelTransaction($data): array
     {
-        $transaction = Transaction::where('id', $data['transaction_id'])->first();
-        $user = Transaction::where('user_id', Auth::id())
+        $transaction = $this->transaction->where('id', $data['transaction_id'])->first();
+        $user = $this->transaction->where('user_id', Auth::id())
             ->where('id', $data['transaction_id'])->first();
 
         if (!$transaction) {
-            return  ['message' => 'Transaction Not Found'];
+            return  [
+                'error' => true,
+                'msg' => 'Transaction Not Found'
+            ];
         }
         if (!$user) {
-            return ['error' => 'You\'re Not Authorized to Cancel the transaction'];
+            return [
+                'error' => true,
+                'msg' => 'You\'re Not Authorized to Cancel the transaction'
+            ];
         }
 
         $transaction->update([
@@ -158,65 +234,100 @@ class TransactionRepository
         ];
         event(new TransactionCancelled($email_data, $user));
 
+        Transaction::withoutWrapping();
         return [
-            'message' => 'Transaction Cancelled, Check your mail',
-            'data' => $transaction,
+            'error' => false,
+            'msg' => 'Transaction Cancelled, Check your mail',
+            'data' => new Transaction($transaction),
         ];
     }
 
-    public function getSingleTransaction($data)
+    /**
+     * fetch a transaction record
+     * @param $data
+     * @return Transaction | array
+     */
+    public function getSingleTransaction($data): array
     {
-        $transaction = Transaction::where('id', $data['transaction_id'])->first();
+        $transaction = $this->transaction->where('id', $data['transaction_id'])->first();
 
         if (!$transaction) {
-            return ['message' => 'Transaction Record Not found'];
+            return [
+                'error' => true,
+                'msg' => 'Transaction Record Not found'
+            ];
         }
 
-        return [
-            'data' => $transaction,
-        ];
+        Transaction::withoutWrapping();
+        return new Transaction($transaction);
     }
 
-    public function getUserTransactions()
+    /**
+     * Get all transaction record that belongs to the logged in user
+     * @return Transactions
+     */
+    public function getUserTransactions(): Transactions
     {
-        return auth()->user()->transactions;
+        $limit = request()->input('limit') ?? 25;
+        $transactions = auth()->user()->transactions->simplePaginate($limit);
+        return new Transactions($transactions);
     }
 
-    public function getAllTransaction()
-    {
-        return Transaction::all();
-    }
+    /**
+     * Get all transaction
+     * @return Transactions
+     */
 
-    public function getProductTransactions($data)
+    public function getAllTransaction(): Transactions
     {
-        $product = Product::find($data['product_id']);
+        $limit = request()->input('limit') ?? 25;
+        $transactions = $this->transaction->paginate($limit);
+        return new Transactions($transactions);
+    }
+    /**
+     * Get transaction records for a particular product
+     * @param $data
+     * @return Transactions
+     */
+    public function getProductTransactions($data): Transactions
+    {
+        $product = $this->product->find($data['product_id']);
 
         if (!$product) {
-            return ['message' => 'Product Record Not found'];
+            return [
+                'error' => true,
+                'msg' => 'Product Record Not found'
+            ];
         }
+        $limit = request()->input('limit') ?? 25;
+        $transactions = $product->transactions->paginate($limit);
 
-        $transactions = $product->transactions;
-        // if($transactions != $product)
-        // {
-        //     return ['message' => 'Transaction Record Not found'];
-        // }
-
-        return [
-            'data' => $transactions,
-        ];
+        return new Transactions($transactions);
     }
 
-    public function rejectPayment($data)
+    /**
+     * Reject a payment
+     * @param $data
+     * @return array
+     */
+
+    public function rejectPayment($data): array
     {
-        $transaction = Transaction::find($data['transaction_id']);
+        $transaction = $this->transaction->find($data['transaction_id']);
 
         if (!$transaction) {
-            return ['error' => 'Transaction Not Found'];
+            return [
+                'error' => true,
+                'msg' => 'Transaction Not Found'
+            ];
         }
 
         $user = $transaction->product->user_id;
         if ($user != Auth::id()) {
-            return ['error' => 'You\'re Not Authorized to Reject the payment'];
+            return [
+                'error' => true,
+                'msg' => 'You\'re Not Authorized to Reject the payment'
+            ];
         }
 
         $transaction->update([
@@ -224,7 +335,7 @@ class TransactionRepository
         ]);
 
         //Store mail data in an array and fire the event
-        $userData = User::where('id', $user)->first();
+        $userData = $this->user->where('id', $user)->first();
         $email_data = [
             'mailTo' => $userData->email,
             'subject' => 'Payment Rejecttion',
@@ -232,9 +343,11 @@ class TransactionRepository
         ];
         event(new PaymentRejected($email_data, $userData));
 
+        Transaction::withoutWrapping();
         return [
-            'message' => 'Payment Rejected, Check your mail',
-            'data' => $transaction,
+            'error' => false,
+            'msg' => 'Payment Rejected, Check your mail',
+            'data' => new  Transaction($transaction),
         ];
     }
 }

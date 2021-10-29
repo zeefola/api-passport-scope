@@ -6,17 +6,31 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Repository\TransactionRepository;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\JsonResponse;
 
 class TransactionController extends Controller
 {
-    protected $transactionrepository;
+    /**
+     *  @var TransactionRepository
+     */
+    protected $transaction;
 
-    public function __construct(TransactionRepository $transactionrepository)
+    /**
+     * TransactionController constructor
+     * @param TransactionRepository $transaction
+     */
+    public function __construct(TransactionRepository $transaction)
     {
-        $this->transactionrepository = $transactionrepository;
+        $this->transaction = $transaction;
     }
 
-    public function initializeTransaction(Request $request)
+
+    /**
+     * Initialize transaction
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function initializeTransaction(Request $request): JsonResponse
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
@@ -24,86 +38,132 @@ class TransactionController extends Controller
             'quantity' => 'bail|required',
         ])->validate();
 
-        $response = $this->transactionrepository->initializeTransaction($validatedData);
+        $response = $this->transaction->initializeTransaction($validatedData);
         return response()->json($response);
     }
 
-    public function markAsPaid(Request $request)
+    /**
+     * Mark transaction as paid
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function markAsPaid(Request $request): JsonResponse
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
             'transaction_id' => 'bail|required',
         ])->validate();
 
-        $response = $this->transactionrepository->markAsPaid ($validatedData);
+        $response = $this->transaction->markAsPaid($validatedData);
         return response()->json($response);
     }
 
-    public function confirmPayment(Request $request)
+    /**
+     * Confirm payment
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function confirmPayment(Request $request): JsonResponse
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
             'transaction_id' => 'bail|required',
         ])->validate();
 
-        $response = $this->transactionrepository->confirmPayment($validatedData);
+        $response = $this->transaction->confirmPayment($validatedData);
         return response()->json($response);
     }
 
-    public function rejectPayment(Request $request)
+    /**
+     * Reject payment
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function rejectPayment(Request $request): JsonResponse
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
             'transaction_id' => 'bail|required',
         ])->validate();
 
-        $response = $this->transactionrepository->rejectPayment($validatedData);
+        $response = $this->transaction->rejectPayment($validatedData);
         return response()->json($response);
     }
 
-    public function cancelTransaction(Request $request)
+    /**
+     * Cancal Transaction
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function cancelTransaction(Request $request): JsonResponse
     {
         //Validate inputs
         $validatedData = Validator::make($request->all(), [
             'transaction_id' => 'bail|required',
         ])->validate();
 
-        $response = $this->transactionrepository->cancelTransaction($validatedData);
+        $response = $this->transaction->cancelTransaction($validatedData);
         return response()->json($response);
     }
 
-    public function getSingleTransaction(Request $request)
+    /**
+     * Get a transaction record
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getSingleTransaction(Request $request): JsonResponse
     {
         //Validate what's coming in
-        $validatedId = Validator::make($request->all(),
-        ['transaction_id' => 'required'])->validate();
+        $validatedId = Validator::make(
+            $request->all(),
+            ['transaction_id' => 'required']
+        )->validate();
 
-        $transaction = $this->transactionrepository->getSingleTransaction($validatedId);
+        $transaction = $this->transaction->getSingleTransaction($validatedId);
 
         return response()->json($transaction);
     }
 
-    public function getAllTransaction()
+
+    /**
+     * Get all transaction
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getAllTransaction(): JsonResponse
     {
-        $transaction = $this->transactionrepository->getAllTransaction();
-        return response()->json(['transactions' =>$transaction]);
+        $transactions = $this->transaction->getAllTransaction();
+        return response()->json($transactions);
     }
 
-    public function getUserTransactions()
+
+    /**
+     * Get transaction records for a logged in user
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getUserTransactions(): JsonResponse
     {
-        $transaction = $this->transactionrepository->getUserTransactions();
-        return response()->json(['transactions' =>$transaction]);
+        $transactions = $this->transaction->getUserTransactions();
+        return response()->json($transactions);
     }
 
-    public function getProductTransactions(Request $request)
+
+    /**
+     * Get transaction records for a particular product
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getProductTransactions(Request $request): JsonResponse
     {
         //Validate what's coming in
-        $validatedId = Validator::make($request->all(),
-        ['product_id' => 'required'])->validate();
+        $validatedId = Validator::make(
+            $request->all(),
+            ['product_id' => 'required']
+        )->validate();
 
-        $transaction = $this->transactionrepository->getProductTransactions($validatedId);
+        $transactions = $this->transaction->getProductTransactions($validatedId);
 
-        return response()->json($transaction);
+        return response()->json($transactions);
     }
-
 }
