@@ -6,6 +6,8 @@ use App\Http\Resources\User;
 use App\Repository\Actors\UserActor;
 use Illuminate\Support\Facades\Hash;
 use App\Events\UserRegistered;
+use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 
 class AuthRepository
 {
@@ -28,23 +30,68 @@ class AuthRepository
      */
     public function register($data): array
     {
+        $confirmation_code = Str::random(20);
+        $confirm = rand(111111, 999999);
+
+        //check if email exist
+        $emailExists = $this->user->where('email', $data['email'])->first();
+        if ($emailExists) {
+            return [
+                'error' => true,
+                'msg' => [
+                    'email' => 'Email associated with another account'
+                ]
+            ];
+        }
+
+        //check if phone number exist
+        $phoneNumberExists = $this->user->where('phone_number', $data['phone_number'])->first();
+        if ($phoneNumberExists) {
+            return [
+                'error' => true,
+                'msg' => [
+                    'email' => 'Phone Number associated with another account'
+                ]
+            ];
+        }
+
+        //check if username exist
+        $userNameExists = $this->user->getModel()->where('username', 'LIKE', $data['phone_number'])->first();
+        if ($userNameExists) {
+            return [
+                'error' => true,
+                'msg' => [
+                    'email' => 'Username associated with another account'
+                ]
+            ];
+        }
+
         //Create a record and send response to the controller
         $this->user->create(
             [
                 'name' => $data['name'],
+                'username' => $data['username'],
                 'email' => $data['email'],
+                'phone_number' => $data['phone_number'],
                 'password' => bcrypt($data['password']),
+                'remember_token' => $confirmation_code,
+                'confirm_code' => $confirm,
+                'active' => true,
+                'created_at' => Carbon::now(),
                 'scopes' => ['user', 'all', 'products']
             ]
         );
 
+        $url = config('app.page_url') . '/confirm-account?email=' . $data['email'] . '&token=' . $confirmation_code;
+
         $email_data = [
             'username' => $data['name'],
             'mailTo' => $data['email'],
-            'subject' => 'Successful Registration',
+            'url' => $url,
+            'subject' => 'Verify Your Email To Complete Your Registration',
             'mail_body' => 'You\'re getting this mail because you successfully registered on our platform',
-            'button_name' => 'Click to Login',
-            'button_link' => 'http://localhost/api/login'
+            'button_name' => 'Click to Confirm',
+            // 'button_link' => 'http://localhost/api/login'
         ];
 
         event(new UserRegistered($email_data));

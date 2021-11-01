@@ -9,9 +9,12 @@ use Illuminate\Support\Facades\Auth;
 // use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Traits\ValidatePhoneNumber;
+use Illuminate\Support\Facades\App;
 
 class AuthController extends Controller
 {
+    use ValidatePhoneNumber;
     /**
      *  @var AuthRepository
      */
@@ -32,15 +35,36 @@ class AuthController extends Controller
 
     public function register(Request $request): JsonResponse
     {
+        $email = 'bail|required|email|unique:users';
+        if (App::environment('production')) {
+            $email = 'bail|required|email:rfc,dns|unique:users';
+        }
         // Validate what's coming in
-        $validatedData = Validator::make($request->all(), [
+        $input = $request->all();
+        Validator::make($input, [
             'name' => 'bail|required',
-            'email' => 'bail|required|email|unique:users',
+            'username' => 'bail|required',
+            'phone_number' => 'bail|required|unique:users',
+            'email' => $email,
             'password' => 'bail|required'
         ])->validate();
 
+        //validate phone number
+        $validatedPhoneNumber = $this->validatePhoneNumber($input['phone_number']);
+
+        if (!$validatedPhoneNumber['valid']) {
+            return response()->json([
+                'error' => true,
+                'msg' => [
+                    'phone_number' => ["Not a valid phone number, Phone number should be in the format '08*********'"],
+                ]
+            ]);
+        }
+
+        $input['phone_number'] = $validatedPhoneNumber;
+
         //Register User and Return response
-        $response = $this->auth->register($validatedData);
+        $response = $this->auth->register($input);
         return response()->json($response);
     }
 

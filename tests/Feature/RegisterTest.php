@@ -20,7 +20,13 @@ class RegisterTest extends TestCase
                 'errors' => [
                     'name' => ['The name field is required.'],
                     'email' => ['The email field is required.'],
-                    'password' => ['The password field is required.']
+                    'password' => ['The password field is required.'],
+                    "username" => [
+                        "The username field is required."
+                    ],
+                    "phone_number" => [
+                        "The phone number field is required."
+                    ],
                 ],
             ]);
     }
@@ -29,11 +35,19 @@ class RegisterTest extends TestCase
     {
         $this->withoutExceptionHandling();
         Event::fake();
-        $password = bcrypt('zee123');
+        // $password = bcrypt('zee123');
+        $name = $this->faker->name();
+        $username = $this->faker->userName;
+        $phone_number = '081' . (string)$this->faker->numerify("########");
+        $email = $this->faker->unique()->safeEmail;
+        $password = $this->faker->password(8);
+
         $payload = [
-            'name' => 'Zainab',
-            'email' => 'zeebay@mail.com',
+            'name' => $name,
+            'email' => $email,
             'password' => $password,
+            'username' => $username,
+            'phone_number' => $phone_number,
         ];
 
         $response = $this->json('POST', '/api/register', $payload)
