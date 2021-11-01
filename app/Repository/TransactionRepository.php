@@ -247,7 +247,7 @@ class TransactionRepository
      * @param $data
      * @return Transaction | array
      */
-    public function getSingleTransaction($data): array
+    public function getSingleTransaction($data)
     {
         $transaction = $this->transaction->where('id', $data['transaction_id'])->first();
 
