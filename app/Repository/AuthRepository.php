@@ -6,6 +6,7 @@ use App\Http\Resources\User;
 use App\Repository\Actors\UserActor;
 use Illuminate\Support\Facades\Hash;
 use App\Events\UserRegistered;
+use App\Events\UserActivated;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 
@@ -83,6 +84,7 @@ class AuthRepository
         );
 
         $url = config('app.page_url') . '/confirm-account?email=' . $data['email'] . '&token=' . $confirmation_code;
+        $this->user->findBy('username', $data['username']);
 
         $email_data = [
             'username' => $data['name'],
@@ -92,6 +94,7 @@ class AuthRepository
             'mail_body' => 'You\'re getting this mail because you successfully registered on our platform',
             'button_name' => 'Click to Confirm',
             // 'button_link' => 'http://localhost/api/login'
+            // 'confirm_code' => $confirm
         ];
 
         event(new UserRegistered($email_data));
@@ -137,6 +140,62 @@ class AuthRepository
             'msg' => 'Registration Successful. Check your inbox for confirmation',
         ];
     }
+
+    /**
+     * Confirm user registration using email and token
+     * @param $input
+     * @return array []
+     */
+    public function confirmToken($input): array
+    {
+        $email = $input['email'];
+        $confirm_code = $input['confirm_code'];
+
+        $user = $this->user->findBy('email', $email);
+
+        if (!empty($user)) {
+            $since = Carbon::parse($user->activation_created)->diffInHours(Carbon::now());
+            if ($since <= 24) {
+                if (!$user->active) {
+                    if ($user->remember_token === $confirm_code) {
+                        $user->active = '1';
+                        $user->remember_token = '';
+                        $user->confirm_code = '';
+                        $user->email_verified_at = Carbon::now();
+
+                        $user->save();
+
+                        event(new UserActivated($user, [
+                            'subject' => 'Account Activated',
+                            'name' => $user->name
+                        ]));
+
+                        return [
+                            'msg' => 'Account has been activated successfully.',
+                            'error' => false
+                        ];
+                    }
+                    return [
+                        'msg' => 'Invalid activation code',
+                        'error' => true
+                    ];
+                }
+                return [
+                    'msg' => 'Account has already been verified.',
+                    'error' => true
+                ];
+            }
+            return [
+                'msg' => 'Activation link has expired.',
+                'error' => true
+            ];
+        }
+        return [
+            'msg' => 'Account does not exist',
+            'error' => true
+        ];
+    }
+
     /**
      * Login User
      * @param $data

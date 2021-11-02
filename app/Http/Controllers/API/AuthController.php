@@ -115,6 +115,27 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function confirmToken(Request $request): JsonResponse
+    {
+        $input = $request->all();
+        $validator = Validator::make($input, [
+            'email' => 'bail|required|email',
+            'confirm_code' => 'bail|required'
+        ]);
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return response()->json(['error' => true, 'msg' => $messages]);
+        }
+
+        return response()->json($this->auth->confirmToken($input));
+    }
+    
+
 
     // public function validationError($validatedData)
     // {

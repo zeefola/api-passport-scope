@@ -7,6 +7,8 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Event;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
+use App\Models\User;
+use App\Events\UserActivated;
 
 class RegisterTest extends TestCase
 {
@@ -61,8 +63,34 @@ class RegisterTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('users', [
-            'name' => $payload['name'],
-            'email' => $payload['email']
+            'name' => $name,
+            'email' => $email,
+            'username' => $username,
+            'phone_number' => $phone_number,
+        ]);
+    }
+
+    /**
+     * Test confirm account after registration using confirmation token
+     *
+     * @return void
+     */
+    public function testConfirmToken()
+    {
+        Event::fake();
+
+        $user = User::factory()->create();
+        // echo $user->email;
+        $response = $this->json('POST', '/api/confirm-code', [
+            'email' => $user->email,
+            'confirm_code' => $user->remember_token
+        ]);
+
+        Event::assertDispatched(UserActivated::class);
+
+        $response->assertJson([
+            "error" => false,
+            "msg" => "Account has been activated successfully."
         ]);
     }
 }
