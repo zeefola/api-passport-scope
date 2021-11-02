@@ -9,6 +9,7 @@ use Laravel\Passport\Passport;
 use Tests\TestCase;
 use App\Models\User;
 use App\Events\UserActivated;
+use App\Events\UserRegistered;
 
 class RegisterTest extends TestCase
 {
@@ -91,6 +92,29 @@ class RegisterTest extends TestCase
         $response->assertJson([
             "error" => false,
             "msg" => "Account has been activated successfully."
+        ]);
+    }
+
+    /**
+     * Test resend confirmation code for confirming registration
+     *
+     * @return void
+     */
+    public function testResendConfirmationCode()
+    {
+        Event::fake();
+
+        $user = User::factory()->create();
+
+        $response = $this->json('POST', '/api/resend-confirmation-code', [
+            'email' => $user->email
+        ]);
+
+        Event::assertDispatched(UserRegistered::class);
+
+        $response->assertJson([
+            "error" => false,
+            "msg" => "Account activation code has been sent."
         ]);
     }
 }

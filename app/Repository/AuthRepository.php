@@ -197,6 +197,46 @@ class AuthRepository
     }
 
     /**
+     * Resend user confirmation code for confirming registration
+     * @param $input
+     * @return array []
+     */
+    public function resendCode($input): array
+    {
+        $email = filter_var($input['email'], FILTER_SANITIZE_EMAIL);
+        $user = $this->user->findBy('email', $email);
+
+        if (!empty($user)) {
+            $confirmation_code = str_random(20);
+            $confirm = rand(111111, 999999);
+
+            $user->remember_token = $confirmation_code;
+            $user->confirm_code = $confirm;
+            $user->activation_created = Carbon::now();
+            $user->save();
+
+            $url = config('app.frontend_url') . '/confirm-account?email=' . $email . '&token=' . $confirmation_code;
+
+            event(new UserRegistered($user, [
+                'title' => 'Confirm Account',
+                'name' => $user->name,
+                'url' => $url,
+                'email' => $email,
+                'confirm_code' => $confirm
+            ]));
+
+            return [
+                'msg' => 'Account activation code has been sent.',
+                'error' => false
+            ];
+        }
+        return [
+            'msg' => 'Account does not exist',
+            'error' => true
+        ];
+    }
+
+    /**
      * Login User
      * @param $data
      * @return array []

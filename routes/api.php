@@ -22,7 +22,8 @@ use App\Http\Controllers\API\TransactionController;
 // });
 
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/confirm-code', [AuthController::class, 'confirmAccount']); // confirm account after registration
+Route::post('/confirm-code', [AuthController::class, 'confirmToken']); // confirm account after registration
+Route::post('/resend-confirmation-code', [AuthController::class, 'resendCode']);
 //Register multiple user
 Route::post('/multi-register', [AuthController::class, 'multiRegister']);
 Route::post('/login', [AuthController::class, 'login']);

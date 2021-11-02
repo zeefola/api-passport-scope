@@ -134,7 +134,26 @@ class AuthController extends Controller
 
         return response()->json($this->auth->confirmToken($input));
     }
-    
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function resendCode(Request $request): JsonResponse
+    {
+        $input = $request->all();
+        $validator = Validator::make($input, [
+            'email' => 'bail|required|email'
+        ]);
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return response()->json(['error' => true, 'msg' => $messages]);
+        }
+
+        return response()->json($this->auth->resendCode($input));
+    }
+
 
 
     // public function validationError($validatedData)
