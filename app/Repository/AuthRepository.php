@@ -7,6 +7,7 @@ use App\Repository\Actors\UserActor;
 use Illuminate\Support\Facades\Hash;
 use App\Events\UserRegistered;
 use App\Events\UserActivated;
+use App\Events\UserChangePassword;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 
@@ -244,13 +245,13 @@ class AuthRepository
 
     public function login($data): array
     {
-        $user_email = $data['email'];
+        $user_email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
         $user_password = $data['password'];
 
         //Get User's Record
         $user = $this->user->where('email', $user_email)->first();
 
-        // Compare Db with Request Data
+        // Check if user account exists
         if (!$user) {
             return [
                 'error' => true,
@@ -258,6 +259,15 @@ class AuthRepository
             ];
         }
 
+        // Check if user account has been activated
+        if ($user->active == 0 && $user->remember_token) {
+            return [
+                'error' => true,
+                'msg' => 'Account has not been activated.'
+            ];
+        }
+
+        //validate password
         if (!Hash::check($user_password, $user->password)) {
             return [
                 'error' => true,
@@ -267,12 +277,85 @@ class AuthRepository
 
         //Create an access token for the user
         $accessToken = $user->createToken('accessToken', $user->scopes)->accessToken;
+        $user->last_login = Carbon::now();
+        $user->save();
+
         User::withoutWrapping();
         return [
             'error' => false,
             'msg' => 'Login Successful',
             'data' => new User($user),
             'access_token' => $accessToken
+        ];
+    }
+
+    /**
+     * Reset User Password
+     * @param $input
+     * @return array []
+     */
+    public function resetPassword($input): array
+    {
+        $email = filter_var($input['email'], FILTER_SANITIZE_EMAIL);
+        $user = $this->user->findBy('email', $email);
+
+        if (!$user) {
+            return [
+                'msg' => 'Email is not associated with any account.',
+                'error' => true
+            ];
+        }
+        $password = str_random(6);
+        $user->password = Hash::make($password);
+        $user->save();
+
+        event(new UserChangePassword($user, [
+            'title' => 'Password Reset',
+            'name' => $user->name,
+            'password' => $password
+        ]));
+
+        return [
+            'msg' => 'A new password has been sent to your email',
+            'error' => false
+        ];
+    }
+
+    /**
+     * Change user password
+     * @param $request
+     * @return array []
+     */
+    public function changePassword($request): array
+    {
+        $input = $request->all();
+
+        $old_password = $input['oldpassword'];
+        $password = $input['password'];
+        $confirm_password = $input['confirmpassword'];
+
+        if ($password !== $confirm_password) {
+            return [
+                'error' => true,
+                'msg' => 'Incorrect confirm password'
+            ];
+        }
+
+        $user_id = $request->user()->id; //Auth::id();
+        $user = $this->user->where('id', $user_id)->first();
+
+        if (Hash::check($old_password, $user->password)) {
+            $user->password = Hash::make($password);
+            $user->save();
+
+            return [
+                'error' => false,
+                'msg' => 'Password changed successfully'
+            ];
+        }
+        return [
+            'error' => true,
+            'msg' => 'Old password is incorrect'
         ];
     }
 }

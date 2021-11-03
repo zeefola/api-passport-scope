@@ -10,10 +10,11 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Events\UserActivated;
 use App\Events\UserRegistered;
+use App\Events\UserChangePassword;
 
 class RegisterTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, WithFaker;
 
     public function test_name_email_password_is_required_to_register()
     {
@@ -115,6 +116,134 @@ class RegisterTest extends TestCase
         $response->assertJson([
             "error" => false,
             "msg" => "Account activation code has been sent."
+        ]);
+    }
+
+    /**
+     * Test reset password, email does not exist
+     *
+     * @return void
+     */
+    public function testResetPasswordAccountDoesNotExist()
+    {
+        User::factory()->create();
+        $email = $this->faker->email();
+
+        $response = $this->json('POST', '/api/reset-password', [
+            "email" => $email
+        ]);
+
+        $response->assertJson([
+            "error" => true,
+            "msg" => "Email is not associated with any account."
+        ]);
+    }
+
+    /**
+     * Test reset password
+     *
+     * @return void
+     */
+    public function testResetPassword()
+    {
+        Event::fake();
+
+        $user = User::factory()->create();
+
+        $response = $this->json('POST', '/api/reset-password', [
+            "email" => $user->email
+        ]);
+
+        Event::assertDispatched(UserChangePassword::class);
+
+        $response->assertJson([
+            "error" => false,
+            "msg" => "A new password has been sent to your email"
+        ]);
+    }
+
+    /**
+     * Test change password, confirm password
+     *
+     * @return void
+     */
+    public function testChangePasswordConfirmationError()
+    {
+        $user = User::factory()->create([
+            "active" => true,
+            "remember_token" => ""
+        ]);
+
+        Passport::actingAs($user);
+
+        $password = $this->faker->password(8);
+        $confirmpassword = $this->faker->password(9);
+
+        $response = $this->json('POST', '/api/update-password', [
+            "oldpassword" => "secret",
+            "password" => $password,
+            "confirmpassword" => $confirmpassword
+        ]);
+
+        $response->assertJson([
+            "error" => true,
+            "msg" => "Incorrect confirm password"
+        ]);
+    }
+
+    /**
+     * Test change password, incorrect old password
+     *
+     * @return void
+     */
+    public function testChangePasswordIncorrectOldPasswordError()
+    {
+        $user = User::factory()->create([
+            "active" => true,
+            "remember_token" => ""
+        ]);
+
+        Passport::actingAs($user);
+
+        $password = $this->faker->password(8);
+
+        $response = $this->json('POST', '/api/update-password', [
+            "oldpassword" => "secrets",
+            "password" => $password,
+            "confirmpassword" => $password
+        ]);
+
+        $response->assertJson([
+            "error" => true,
+            "msg" => "Old password is incorrect"
+        ]);
+    }
+
+    /**
+     * Test change password
+     *
+     * @return void
+     */
+    public function testChangePassword()
+    {
+        $user = User::factory()->create([
+            "active" => true,
+            "remember_token" => ""
+        ]);
+
+        Passport::actingAs($user);
+
+        $password = $this->faker->password(8);
+
+        $response = $this->json('POST', '/api/update-password', [
+            "oldpassword" => "secret",
+            "password" => $password,
+            "confirmpassword" => $password
+        ]);
+
+        $response->assertJson([
+            "error" => false,
+            "msg" => "Password changed successfully"
         ]);
     }
 }

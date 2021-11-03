@@ -27,6 +27,7 @@ Route::post('/resend-confirmation-code', [AuthController::class, 'resendCode']);
 //Register multiple user
 Route::post('/multi-register', [AuthController::class, 'multiRegister']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 //Fetch Product
 Route::get('/products', [ProductController::class, 'getAllProduct']);
@@ -35,6 +36,8 @@ Route::get('/single-product', [ProductController::class, 'getSingleProduct']);
 Route::middleware('auth:api')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::post('/update-password', [AuthController::class, 'changePassword']);
 
     //Product Routes
     Route::post('/create-product', [ProductController::class, 'createProduct']);

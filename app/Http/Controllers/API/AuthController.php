@@ -154,6 +154,46 @@ class AuthController extends Controller
         return response()->json($this->auth->resendCode($input));
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $input = $request->all();
+        $validator = Validator::make($input, [
+            'email' => 'bail|required'
+        ]);
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return response()->json(['error' => true, 'msg' => $messages]);
+        }
+
+        return response()->json($this->auth->resetPassword($request->all()));
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function changePassword(Request $request): JsonResponse
+    {
+        $input = $request->all();
+        $validator = Validator::make($input, [
+            'oldpassword' => 'bail|required',
+            'password' => 'bail|required|min:8',
+            'confirmpassword' => 'bail|required|min:8'
+        ]);
+
+        if ($validator->fails()) {
+            $messages = $validator->messages();
+            return response()->json(['error' => true, 'msg' => $messages]);
+        }
+
+        return response()->json($this->auth->changePassword($request));
+    }
+
 
 
     // public function validationError($validatedData)

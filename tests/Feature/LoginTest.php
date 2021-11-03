@@ -15,7 +15,7 @@ class LoginTest extends TestCase
 
     public function test_requires_email_and_password_to_login()
     {
-        $this->json('POST', '/api/login')
+        $this->json('POST', '/api/login', [])
             ->assertStatus(422)
             ->assertJson([
                 'message' => 'The given data was invalid.',
@@ -26,19 +26,41 @@ class LoginTest extends TestCase
             ]);
     }
 
+    /**
+     * Test account not activated
+     *
+     * @return void
+     */
+    public function testAccountNotActivatedError()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->json('POST', '/api/login', [
+            "email" => $user->email,
+            "password" => "secret"
+        ]);
+
+        $response->assertJson([
+            "error" => true,
+            "msg" => "Account has not been activated."
+        ]);
+    }
+
     public function test_user_logins_successfully()
     {
         $this->withoutExceptionHandling();
         $user = User::factory()->create([
-            'email' => 'zeezee@test.com',
-            'password' => bcrypt('123456'),
+            // 'email' => 'zeezee@test.com',
+            // 'password' => bcrypt('123456'),
+            "active" => true,
+            "remember_token" => ""
         ]);
 
         Passport::actingAs($user);
 
         $this->json('POST', '/api/login', [
             'email' => $user->email,
-            'password' => '123456'
+            'password' => 'password'
         ])->assertJson([
             'error' => false,
             'msg' => 'Login Successful',
