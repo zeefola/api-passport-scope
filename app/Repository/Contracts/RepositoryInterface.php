@@ -25,4 +25,5 @@ interface RepositoryInterface
     public function exists($field, $value);
     public function join($db, $modelField, $dbField);
     public function sum($column);
+    public function whereIn($column, array $data);
 }

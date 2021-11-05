@@ -113,4 +113,9 @@ abstract class Repository implements RepositoryInterface
     {
         return $this->model::sum($column);
     }
+
+    public function whereIn($column, array $data)
+    {
+        return $this->model::whereIn($column, $data);
+    }
 }

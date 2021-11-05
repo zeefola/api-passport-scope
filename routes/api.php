@@ -26,6 +26,9 @@ Route::post('/confirm-code', [AuthController::class, 'confirmToken']); // confir
 Route::post('/resend-confirmation-code', [AuthController::class, 'resendCode']);
 //Register multiple user
 Route::post('/multi-register', [AuthController::class, 'multiRegister']);
+//Dlete Multiple record
+Route::delete('delete-multiple', [AuthController::class, 'deleteMultipleUser']);
+
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 

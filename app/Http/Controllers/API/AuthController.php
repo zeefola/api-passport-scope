@@ -90,6 +90,22 @@ class AuthController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
+    public function deleteMultipleUser(Request $request): JsonResponse
+    {
+        // Validate what's coming in
+        $validatedData = Validator::make($request->all(), [
+            'id' => 'bail|required',
+        ])->validate();
+
+        $response = $this->auth->deleteMultipleUser($validatedData);
+        return response()->json($response);
+    }
+
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function login(Request $request): JsonResponse
     {
         //validate users info

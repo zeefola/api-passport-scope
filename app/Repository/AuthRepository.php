@@ -142,6 +142,33 @@ class AuthRepository
         ];
     }
 
+    /** Delete multiple users
+     * @param $data
+     * @return array []
+     */
+
+    public function deleteMultipleUser($data): array
+    {
+        // $ids = explode(',', $data);
+
+        foreach ($data as $key => $id) {
+            $user = $this->user->find($id);
+            if (!$user) {
+                return [
+                    'error' => true,
+                    'msg' => 'User with ' . $id . 'not found'
+                ];
+            }
+
+            $this->user->where('id', $id)->delete();
+        }
+
+        return [
+            'error' => false,
+            'msg' => 'Users Deleted Successfully',
+        ];
+    }
+
     /**
      * Confirm user registration using email and token
      * @param $input
